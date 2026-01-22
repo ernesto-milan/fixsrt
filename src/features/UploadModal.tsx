@@ -1,13 +1,14 @@
 "use client";
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 import { FileText, Film, Upload, Check } from "lucide-react";
-import { Button } from '@/shared/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/shared/ui/dialog';
-import { useApp } from "@/shared/contexts/AppContext";
+import { Button } from "@/shared/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
 import { parseSRT } from "@/shared/utils/srtParser";
 import { cn } from "@/shared/lib/utils";
 import type { Subtitle } from "@/shared/types/subtitle";
+import { useUiStore } from "@/shared/store/uiStore";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 
 interface DropZoneProps {
   label: string;
@@ -38,18 +39,16 @@ function DropZone({ label, accept, icon, required, fileName, onFileSelect }: Dro
       className={cn(
         "flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors",
         isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
-        fileName && "border-primary/30 bg-highlight"
+        fileName && "border-primary/30 bg-highlight",
       )}
-      onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragOver(true);
+      }}
       onDragLeave={() => setIsDragOver(false)}
       onDrop={handleDrop}
     >
-      <input 
-        type="file" 
-        accept={accept} 
-        className="hidden" 
-        onChange={handleChange}
-      />
+      <input type="file" accept={accept} className="hidden" onChange={handleChange} />
       
       {fileName ? (
         <>
@@ -69,7 +68,7 @@ function DropZone({ label, accept, icon, required, fileName, onFileSelect }: Dro
           <div className="text-center">
             <p className="font-medium text-sm">{label}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              {required ? 'Required' : 'Optional'} • Drag & drop or click to browse
+              {required ? "Required" : "Optional"} • Drag & drop or click to browse
             </p>
           </div>
         </>
@@ -79,14 +78,12 @@ function DropZone({ label, accept, icon, required, fileName, onFileSelect }: Dro
 }
 
 export function UploadModal() {
-  const { 
-    isUploadModalOpen, 
-    setIsUploadModalOpen,
-    setSubtitles,
-    setSubtitleFileName,
-    setVideoFile,
-    videoFile,
-  } = useApp();
+  const isUploadModalOpen = useUiStore((state) => state.isUploadModalOpen);
+  const setIsUploadModalOpen = useUiStore((state) => state.setIsUploadModalOpen);
+  const setVideoFile = useUiStore((state) => state.setVideoFile);
+  const videoFile = useUiStore((state) => state.videoFile);
+  const setSelectedSubtitleId = useUiStore((state) => state.setSelectedSubtitleId);
+  const loadSubtitles = useSubtitlesStore((state) => state.loadSubtitles);
 
   const [pendingSrtFile, setPendingSrtFile] = useState<{
     name: string;
@@ -107,20 +104,27 @@ export function UploadModal() {
 
   const handleConfirm = useCallback(() => {
     if (pendingSrtFile) {
-      setSubtitles(pendingSrtFile.subtitles);
-      setSubtitleFileName(pendingSrtFile.name);
+      loadSubtitles(pendingSrtFile.subtitles, pendingSrtFile.name);
+      setSelectedSubtitleId(null);
     }
     if (pendingVideoFile) {
-      setVideoFile({ 
-        name: pendingVideoFile.name, 
+      setVideoFile({
+        name: pendingVideoFile.name,
         url: pendingVideoFile.url,
-        duration: 0 // Will be set by video element
+        duration: 0,
       });
     }
     setPendingSrtFile(null);
     setPendingVideoFile(null);
     setIsUploadModalOpen(false);
-  }, [pendingSrtFile, pendingVideoFile, setSubtitles, setSubtitleFileName, setVideoFile, setIsUploadModalOpen]);
+  }, [
+    pendingSrtFile,
+    pendingVideoFile,
+    loadSubtitles,
+    setIsUploadModalOpen,
+    setSelectedSubtitleId,
+    setVideoFile,
+  ]);
 
   const handleClose = () => {
     setPendingSrtFile(null);
@@ -158,10 +162,7 @@ export function UploadModal() {
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleConfirm}
-            disabled={!pendingSrtFile}
-          >
+          <Button onClick={handleConfirm} disabled={!pendingSrtFile}>
             <Upload className="h-4 w-4 mr-2" />
             Load Files
           </Button>

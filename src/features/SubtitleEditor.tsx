@@ -1,20 +1,23 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useApp } from '@/shared/contexts/AppContext';
-import { Input } from '@/shared/ui/input';
-import { Textarea } from '@/shared/ui/textarea';
-import { Label } from '@/shared/ui/label';
+import { useEffect, useState } from "react";
+import { Input } from "@/shared/ui/input";
+import { Textarea } from "@/shared/ui/textarea";
+import { Label } from "@/shared/ui/label";
 import { formatTimeDisplay } from "@/shared/utils/srtParser";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
+import { useUiStore } from "@/shared/store/uiStore";
 
 export function SubtitleEditor() {
-  const { subtitles, selectedSubtitleId, updateSubtitle } = useApp();
-  
-  const selectedSubtitle = subtitles.find(s => s.id === selectedSubtitleId);
-  
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [text, setText] = useState('');
+  const subtitles = useSubtitlesStore((state) => state.subtitles);
+  const updateSubtitle = useSubtitlesStore((state) => state.updateSubtitle);
+  const selectedSubtitleId = useUiStore((state) => state.selectedSubtitleId);
+
+  const selectedSubtitle = subtitles.find((subtitle) => subtitle.id === selectedSubtitleId);
+
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [text, setText] = useState("");
 
   useEffect(() => {
     if (selectedSubtitle) {
@@ -22,9 +25,9 @@ export function SubtitleEditor() {
       setEndTime(formatTimeDisplay(selectedSubtitle.endTime));
       setText(selectedSubtitle.text);
     } else {
-      setStartTime('');
-      setEndTime('');
-      setText('');
+      setStartTime("");
+      setEndTime("");
+      setText("");
     }
   }, [selectedSubtitle]);
 
@@ -35,27 +38,27 @@ export function SubtitleEditor() {
     }
   };
 
-  // Parse time input like "1:23.45" to milliseconds
+  // Parse time input like "1:23.45" to seconds.
   const parseDisplayTime = (input: string): number | null => {
     const match = input.match(/^(\d+):(\d{1,2})\.(\d{1,2})$/);
     if (!match) return null;
     const [, min, sec, cs] = match;
-    return parseInt(min) * 60000 + parseInt(sec) * 1000 + parseInt(cs.padEnd(2, '0')) * 10;
+    return parseInt(min, 10) * 60 + parseInt(sec, 10) + parseInt(cs.padEnd(2, "0"), 10) / 100;
   };
 
   const handleStartTimeBlur = () => {
-    const ms = parseDisplayTime(startTime);
-    if (ms !== null && selectedSubtitleId) {
-      updateSubtitle(selectedSubtitleId, { startTime: ms });
+    const seconds = parseDisplayTime(startTime);
+    if (seconds !== null && selectedSubtitleId) {
+      updateSubtitle(selectedSubtitleId, { startTime: seconds });
     } else if (selectedSubtitle) {
       setStartTime(formatTimeDisplay(selectedSubtitle.startTime));
     }
   };
 
   const handleEndTimeBlur = () => {
-    const ms = parseDisplayTime(endTime);
-    if (ms !== null && selectedSubtitleId) {
-      updateSubtitle(selectedSubtitleId, { endTime: ms });
+    const seconds = parseDisplayTime(endTime);
+    if (seconds !== null && selectedSubtitleId) {
+      updateSubtitle(selectedSubtitleId, { endTime: seconds });
     } else if (selectedSubtitle) {
       setEndTime(formatTimeDisplay(selectedSubtitle.endTime));
     }

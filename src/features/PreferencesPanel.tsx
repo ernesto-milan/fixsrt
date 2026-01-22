@@ -1,25 +1,28 @@
 "use client";
 
-import { X } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { Label } from '@/shared/ui/label';
-import { Switch } from '@/shared/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select';
-import { useApp } from '@/shared/contexts/AppContext';
-import { cn } from '@/shared/lib/utils';
+import { X } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Label } from "@/shared/ui/label";
+import { Switch } from "@/shared/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
+import { cn } from "@/shared/lib/utils";
+import { useUiStore } from "@/shared/store/uiStore";
 
 const languages = [
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Español' },
-  { code: 'fr', name: 'Français' },
-  { code: 'de', name: 'Deutsch' },
-  { code: 'pt', name: 'Português' },
-  { code: 'ja', name: '日本語' },
-  { code: 'zh', name: '中文' },
+  { code: "en", name: "English" },
+  { code: "es", name: "Español" },
+  { code: "fr", name: "Français" },
+  { code: "de", name: "Deutsch" },
+  { code: "pt", name: "Português" },
+  { code: "ja", name: "日本語" },
+  { code: "zh", name: "中文" },
 ];
 
 export function PreferencesPanel() {
-  const { isPreferencesOpen, setIsPreferencesOpen, preferences, updatePreferences } = useApp();
+  const isPreferencesOpen = useUiStore((state) => state.isPreferencesOpen);
+  const setIsPreferencesOpen = useUiStore((state) => state.setIsPreferencesOpen);
+  const preferences = useUiStore((state) => state.preferences);
+  const updatePreferences = useUiStore((state) => state.updatePreferences);
 
   return (
     <>

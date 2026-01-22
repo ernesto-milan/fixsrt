@@ -1,22 +1,21 @@
 "use client";
 
-import { useApp } from '@/shared/contexts/AppContext';
-import { formatTimeDisplay, getDuration } from '@/shared/utils/srtParser';
-import { cn } from '@/shared/lib/utils';
-import { ScrollArea } from '@/shared/ui/scroll-area';
+import { formatTimeDisplay, getDuration } from "@/shared/utils/srtParser";
+import { cn } from "@/shared/lib/utils";
+import { ScrollArea } from "@/shared/ui/scroll-area";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
+import { useUiStore } from "@/shared/store/uiStore";
 
 export function SubtitleList() {
-  const { 
-    subtitles, 
-    selectedSubtitleId, 
-    setSelectedSubtitleId,
-    preferences,
-    currentTime,
-  } = useApp();
+  const subtitles = useSubtitlesStore((state) => state.subtitles);
+  const selectedSubtitleId = useUiStore((state) => state.selectedSubtitleId);
+  const setSelectedSubtitleId = useUiStore((state) => state.setSelectedSubtitleId);
+  const preferences = useUiStore((state) => state.preferences);
+  const currentTime = useUiStore((state) => state.currentTime);
 
   // Find subtitle that matches current time
   const activeSubtitleId = subtitles.find(
-    sub => currentTime >= sub.startTime && currentTime <= sub.endTime
+    (sub) => currentTime >= sub.startTime && currentTime <= sub.endTime,
   )?.id;
 
   if (subtitles.length === 0) {

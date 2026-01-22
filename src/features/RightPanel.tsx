@@ -1,14 +1,15 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
-import { useApp } from "@/shared/contexts/AppContext";
+import { useUiStore } from "@/shared/store/uiStore";
 import type { RightPanelTab } from "@/shared/types/subtitle";
-import { VideoPreview } from './VideoPreview';
-import { TextRulesPanel } from './TextRulesPanel';
-import { TimeRulesPanel } from './TimeRulesPanel';
+import { VideoPreview } from "./VideoPreview";
+import { TextRulesPanel } from "./TextRulesPanel";
+import { TimeRulesPanel } from "./TimeRulesPanel";
 
 export function RightPanel() {
-  const { rightPanelTab, setRightPanelTab } = useApp();
+  const rightPanelTab = useUiStore((state) => state.rightPanelTab);
+  const setRightPanelTab = useUiStore((state) => state.setRightPanelTab);
 
   return (
     <div className="flex flex-col h-full bg-card">

@@ -2,7 +2,8 @@
 
 import { Download } from "lucide-react";
 import { Button } from "@/shared/ui/button";
-import { AppProvider, useApp } from "@/shared/contexts/AppContext";
+import { useUiStore } from "@/shared/store/uiStore";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 import { Header } from "@/features/Header";
 import { UploadModal } from "@/features/UploadModal";
 import { PreferencesPanel } from "@/features/PreferencesPanel";
@@ -13,7 +14,10 @@ import { ExportModal } from "@/features/ExportModal";
 import { cn } from "@/shared/lib/utils";
 
 function MainContent() {
-  const { preferences, isPreferencesOpen, setIsExportModalOpen, subtitles } = useApp();
+  const preferences = useUiStore((state) => state.preferences);
+  const isPreferencesOpen = useUiStore((state) => state.isPreferencesOpen);
+  const setIsExportModalOpen = useUiStore((state) => state.setIsExportModalOpen);
+  const subtitles = useSubtitlesStore((state) => state.subtitles);
 
   return (
     <div
@@ -65,9 +69,5 @@ function MainContent() {
 }
 
 export function EditorScreen() {
-  return (
-    <AppProvider>
-      <MainContent />
-    </AppProvider>
-  );
+  return <MainContent />;
 }

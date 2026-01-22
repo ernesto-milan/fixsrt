@@ -1,8 +1,8 @@
 export interface Subtitle {
   id: string;
   index: number;
-  startTime: number; // in milliseconds
-  endTime: number; // in milliseconds
+  startTime: number; // in seconds
+  endTime: number; // in seconds
   text: string;
 }
 
@@ -14,13 +14,13 @@ export interface SubtitleFile {
 export interface VideoFile {
   name: string;
   url: string;
-  duration: number;
+  duration: number; // in seconds
 }
 
-export type RightPanelTab = 'preview' | 'text-rules' | 'time-rules';
+export type RightPanelTab = "preview" | "text-rules" | "time-rules";
 
 export interface PreferencesState {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   language: string;
   swapPanels: boolean;
   showIndex: boolean;
@@ -30,8 +30,8 @@ export interface PreferencesState {
 }
 
 export const defaultPreferences: PreferencesState = {
-  theme: 'system',
-  language: 'en',
+  theme: "system",
+  language: "en",
   swapPanels: false,
   showIndex: true,
   showStartTime: true,

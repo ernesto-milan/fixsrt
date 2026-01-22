@@ -1,11 +1,14 @@
 "use client";
 
-import { Upload, Coffee, Settings } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { useApp } from '@/shared/contexts/AppContext';
+import { Upload, Coffee, Settings } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { useUiStore } from "@/shared/store/uiStore";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 
 export function Header() {
-  const { setIsUploadModalOpen, setIsPreferencesOpen, subtitleFileName } = useApp();
+  const setIsUploadModalOpen = useUiStore((state) => state.setIsUploadModalOpen);
+  const setIsPreferencesOpen = useUiStore((state) => state.setIsPreferencesOpen);
+  const subtitleFileName = useSubtitlesStore((state) => state.subtitleFileName);
 
   return (
     <header className="h-14 border-b bg-card flex items-center justify-between px-4">

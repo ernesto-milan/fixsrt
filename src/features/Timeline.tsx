@@ -1,40 +1,46 @@
 "use client";
 
-import { useRef, useCallback, useState, useEffect } from 'react';
-import { useApp } from '@/shared/contexts/AppContext';
-import { formatTimeDisplay } from '@/shared/utils/srtParser';
-import { cn } from '@/shared/lib/utils';
+import { useRef, useCallback, useState, useEffect } from "react";
+import { formatTimeDisplay } from "@/shared/utils/srtParser";
+import { cn } from "@/shared/lib/utils";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
+import { useUiStore } from "@/shared/store/uiStore";
 
 export function Timeline() {
-  const { 
-    subtitles, 
-    selectedSubtitleId, 
-    setSelectedSubtitleId,
-    updateSubtitle,
-    currentTime,
-    setCurrentTime,
-    videoFile,
-  } = useApp();
+  const subtitles = useSubtitlesStore((state) => state.subtitles);
+  const updateSubtitle = useSubtitlesStore((state) => state.updateSubtitle);
+  const selectedSubtitleId = useUiStore((state) => state.selectedSubtitleId);
+  const setSelectedSubtitleId = useUiStore((state) => state.setSelectedSubtitleId);
+  const currentTime = useUiStore((state) => state.currentTime);
+  const setCurrentTime = useUiStore((state) => state.setCurrentTime);
+  const videoFile = useUiStore((state) => state.videoFile);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState<{ id: string; edge: 'start' | 'end' | 'move'; initialX: number; initialTime: number } | null>(null);
+  const [dragging, setDragging] = useState<{
+    id: string;
+    edge: "start" | "end" | "move";
+    initialX: number;
+    initialTime: number;
+  } | null>(null);
 
-  // Calculate total duration
+  // Calculate total duration (seconds).
   const maxTime = Math.max(
     videoFile?.duration || 0,
-    ...subtitles.map(s => s.endTime),
-    60000 // Minimum 1 minute
+    ...subtitles.map((subtitle) => subtitle.endTime),
+    60, // Minimum 1 minute
   );
 
-  // Pixels per millisecond
-  const pxPerMs = containerRef.current ? containerRef.current.clientWidth / maxTime : 0.1;
+  // Pixels per second.
+  const pxPerSecond = containerRef.current
+    ? containerRef.current.clientWidth / maxTime
+    : 0.1;
 
   const getTimeFromX = useCallback((x: number): number => {
     if (!containerRef.current) return 0;
     const rect = containerRef.current.getBoundingClientRect();
     const relativeX = x - rect.left;
-    return Math.max(0, Math.min(maxTime, relativeX / pxPerMs));
-  }, [maxTime, pxPerMs]);
+    return Math.max(0, Math.min(maxTime, relativeX / pxPerSecond));
+  }, [maxTime, pxPerSecond]);
 
   // Handle drag
   useEffect(() => {
@@ -42,22 +48,22 @@ export function Timeline() {
 
     const handleMouseMove = (e: MouseEvent) => {
       const newTime = getTimeFromX(e.clientX);
-      const subtitle = subtitles.find(s => s.id === dragging.id);
+      const subtitle = subtitles.find((item) => item.id === dragging.id);
       if (!subtitle) return;
 
-      if (dragging.edge === 'start') {
-        const newStart = Math.min(newTime, subtitle.endTime - 100);
+      if (dragging.edge === "start") {
+        const newStart = Math.min(newTime, subtitle.endTime - 0.1);
         updateSubtitle(dragging.id, { startTime: Math.max(0, newStart) });
-      } else if (dragging.edge === 'end') {
-        const newEnd = Math.max(newTime, subtitle.startTime + 100);
+      } else if (dragging.edge === "end") {
+        const newEnd = Math.max(newTime, subtitle.startTime + 0.1);
         updateSubtitle(dragging.id, { endTime: newEnd });
-      } else if (dragging.edge === 'move') {
+      } else if (dragging.edge === "move") {
         const delta = newTime - dragging.initialTime;
         const duration = subtitle.endTime - subtitle.startTime;
         const newStart = Math.max(0, subtitle.startTime + delta);
-        updateSubtitle(dragging.id, { 
+        updateSubtitle(dragging.id, {
           startTime: newStart,
-          endTime: newStart + duration 
+          endTime: newStart + duration,
         });
       }
     };
@@ -66,12 +72,12 @@ export function Timeline() {
       setDragging(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragging, subtitles, getTimeFromX, updateSubtitle]);
 
@@ -95,33 +101,33 @@ export function Timeline() {
     <div className="h-20 bg-panel border-t">
       {/* Time markers */}
       <div className="h-5 border-b flex items-end px-2 text-xs text-muted-foreground">
-        {Array.from({ length: Math.ceil(maxTime / 10000) + 1 }, (_, i) => (
-          <span 
-            key={i} 
+        {Array.from({ length: Math.ceil(maxTime / 10) + 1 }, (_, i) => (
+          <span
+            key={i}
             className="absolute font-mono"
-            style={{ left: `${(i * 10000) * pxPerMs}px` }}
+            style={{ left: `${i * 10 * pxPerSecond}px` }}
           >
-            {formatTimeDisplay(i * 10000)}
+            {formatTimeDisplay(i * 10)}
           </span>
         ))}
       </div>
 
       {/* Timeline blocks */}
-      <div 
+      <div
         ref={containerRef}
         className="h-14 relative cursor-pointer"
         onClick={handleTimelineClick}
       >
         {/* Current time indicator */}
-        <div 
+        <div
           className="absolute top-0 bottom-0 w-0.5 bg-primary z-10 pointer-events-none"
-          style={{ left: `${currentTime * pxPerMs}px` }}
+          style={{ left: `${currentTime * pxPerSecond}px` }}
         />
 
         {/* Subtitle blocks */}
         {subtitles.map((subtitle) => {
-          const left = subtitle.startTime * pxPerMs;
-          const width = (subtitle.endTime - subtitle.startTime) * pxPerMs;
+          const left = subtitle.startTime * pxPerSecond;
+          const width = (subtitle.endTime - subtitle.startTime) * pxPerSecond;
           const isSelected = subtitle.id === selectedSubtitleId;
 
           return (
@@ -129,9 +135,9 @@ export function Timeline() {
               key={subtitle.id}
               className={cn(
                 "absolute top-2 h-10 rounded cursor-pointer transition-colors",
-                isSelected 
-                  ? "bg-timeline-block-active ring-2 ring-primary ring-offset-1" 
-                  : "bg-timeline-block hover:bg-timeline-block-active/80"
+                isSelected
+                  ? "bg-timeline-block-active ring-2 ring-primary ring-offset-1"
+                  : "bg-timeline-block hover:bg-timeline-block-active/80",
               )}
               style={{ left: `${left}px`, width: `${Math.max(width, 4)}px` }}
               onClick={(e) => {
@@ -141,11 +147,11 @@ export function Timeline() {
               onMouseDown={(e) => {
                 e.stopPropagation();
                 setSelectedSubtitleId(subtitle.id);
-                setDragging({ 
-                  id: subtitle.id, 
-                  edge: 'move', 
+                setDragging({
+                  id: subtitle.id,
+                  edge: "move",
                   initialX: e.clientX,
-                  initialTime: getTimeFromX(e.clientX)
+                  initialTime: getTimeFromX(e.clientX),
                 });
               }}
             >
@@ -154,11 +160,11 @@ export function Timeline() {
                 className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize"
                 onMouseDown={(e) => {
                   e.stopPropagation();
-                  setDragging({ 
-                    id: subtitle.id, 
-                    edge: 'start', 
+                  setDragging({
+                    id: subtitle.id,
+                    edge: "start",
                     initialX: e.clientX,
-                    initialTime: getTimeFromX(e.clientX)
+                    initialTime: getTimeFromX(e.clientX),
                   });
                 }}
               />
@@ -166,11 +172,11 @@ export function Timeline() {
                 className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize"
                 onMouseDown={(e) => {
                   e.stopPropagation();
-                  setDragging({ 
-                    id: subtitle.id, 
-                    edge: 'end', 
+                  setDragging({
+                    id: subtitle.id,
+                    edge: "end",
                     initialX: e.clientX,
-                    initialTime: getTimeFromX(e.clientX)
+                    initialTime: getTimeFromX(e.clientX),
                   });
                 }}
               />

@@ -1,36 +1,40 @@
 "use client";
 
 import { useRef, useEffect, useCallback, useState } from "react";
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
-import { Button } from '@/shared/ui/button';
-import { Slider } from '@/shared/ui/slider';
-import { useApp } from '@/shared/contexts/AppContext';
-import { formatTimeDisplay } from '@/shared/utils/srtParser';
+import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+import { Slider } from "@/shared/ui/slider";
+import { formatTimeDisplay } from "@/shared/utils/srtParser";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
+import { useUiStore } from "@/shared/store/uiStore";
 
 export function VideoPreview() {
-  const { 
-    videoFile, 
-    subtitles, 
-    currentTime, 
-    setCurrentTime,
-    isPlaying,
-    setIsPlaying,
-  } = useApp();
+  const videoFile = useUiStore((state) => state.videoFile);
+  const setVideoFile = useUiStore((state) => state.setVideoFile);
+  const currentTime = useUiStore((state) => state.currentTime);
+  const setCurrentTime = useUiStore((state) => state.setCurrentTime);
+  const isPlaying = useUiStore((state) => state.isPlaying);
+  const setIsPlaying = useUiStore((state) => state.setIsPlaying);
+  const subtitles = useSubtitlesStore((state) => state.subtitles);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
 
+  useEffect(() => {
+    setDuration(videoFile?.duration ?? 0);
+  }, [videoFile]);
+
   // Get current subtitle
   const currentSubtitle = subtitles.find(
-    sub => currentTime >= sub.startTime && currentTime <= sub.endTime
+    (subtitle) => currentTime >= subtitle.startTime && currentTime <= subtitle.endTime,
   );
 
   // Sync video playback with state
   useEffect(() => {
     if (!videoRef.current) return;
-    
+
     if (isPlaying) {
       videoRef.current.play();
     } else {
@@ -41,23 +45,27 @@ export function VideoPreview() {
   // Update current time during playback
   const handleTimeUpdate = useCallback(() => {
     if (videoRef.current) {
-      setCurrentTime(videoRef.current.currentTime * 1000);
+      setCurrentTime(videoRef.current.currentTime);
     }
   }, [setCurrentTime]);
 
   // Handle video loaded
   const handleLoadedMetadata = useCallback(() => {
     if (videoRef.current) {
-      setDuration(videoRef.current.duration * 1000);
+      const nextDuration = videoRef.current.duration;
+      setDuration(nextDuration);
+      if (videoFile) {
+        setVideoFile({ ...videoFile, duration: nextDuration });
+      }
     }
-  }, []);
+  }, [setVideoFile, videoFile]);
 
   // Seek to position
   const handleSeek = useCallback((value: number[]) => {
     const newTime = value[0];
     setCurrentTime(newTime);
     if (videoRef.current) {
-      videoRef.current.currentTime = newTime / 1000;
+      videoRef.current.currentTime = newTime;
     }
   }, [setCurrentTime]);
 
@@ -123,7 +131,7 @@ export function VideoPreview() {
         <Slider
           value={[currentTime]}
           max={duration || 100}
-          step={100}
+          step={0.1}
           onValueChange={handleSeek}
           className="cursor-pointer"
         />
