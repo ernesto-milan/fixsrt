@@ -1,4 +1,5 @@
-import { Subtitle } from "@/shared/types/subtitle";
+import { parseSync, type NodeList } from "subtitle";
+import { SubtitleBlock } from "@/shared/types/subtitle";
 
 // Parse time string "00:00:00,000" to seconds.
 export function parseTimeToSeconds(timeStr: string): number {
@@ -42,10 +43,11 @@ export function getDuration(startSeconds: number, endSeconds: number): string {
   return `${duration.toFixed(1)}s`;
 }
 
-// Parse SRT file content to Subtitle array.
-export function parseSRT(content: string): Subtitle[] {
-  const subtitles: Subtitle[] = [];
-  const blocks = content.trim().split(/\n\n+/);
+// Parse SRT file content to SubtitleBlock array.
+export function parseSRT(content: string): SubtitleBlock[] {
+  const subtitles: SubtitleBlock[] = [];
+  const normalized = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  const blocks = normalized.trim().split(/\n\n+/);
 
   for (const block of blocks) {
     const lines = block.trim().split("\n");
@@ -65,7 +67,7 @@ export function parseSRT(content: string): Subtitle[] {
     const text = lines.slice(2).join("\n");
 
     subtitles.push({
-      id: `sub-${index}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+      id: `sub-${index}-${Math.round(startTime * 1000)}-${Math.round(endTime * 1000)}`,
       index,
       startTime,
       endTime,
@@ -76,8 +78,46 @@ export function parseSRT(content: string): Subtitle[] {
   return subtitles;
 }
 
-// Generate SRT file content from Subtitle array.
-export function generateSRT(subtitles: Subtitle[]): string {
+// Transform raw SRT content into subtitle blocks for the editor store.
+export function transformSrtToSubtitles(content: string): SubtitleBlock[] {
+  const elements = parseSync(content);
+  const converted = convertSubtitleNodesToBlocks(elements);
+
+  if (converted.length > 0) {
+    return converted;
+  }
+
+  // Temporary fallback until the subtitle-node conversion is implemented.
+  return parseSRT(content);
+}
+
+export function convertSubtitleNodesToBlocks(elements: NodeList): SubtitleBlock[] {
+  let index = 0;
+
+  return elements.flatMap((node) => {
+    if (node.type !== "cue") return [];
+
+    index += 1;
+
+    const startMs = node.data.start;
+    const endMs = node.data.end;
+    const startTime = startMs / 1000;
+    const endTime = endMs / 1000;
+
+    return [
+      {
+        id: `sub-${index}-${startMs}-${endMs}`,
+        index,
+        startTime,
+        endTime,
+        text: node.data.text ?? "",
+      },
+    ];
+  });
+}
+
+// Generate SRT file content from SubtitleBlock array.
+export function generateSRT(subtitles: SubtitleBlock[]): string {
   return subtitles
     .slice()
     .sort((a, b) => a.startTime - b.startTime)

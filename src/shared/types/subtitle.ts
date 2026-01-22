@@ -1,4 +1,4 @@
-export interface Subtitle {
+export interface SubtitleBlock {
   id: string;
   index: number;
   startTime: number; // in seconds
@@ -8,7 +8,7 @@ export interface Subtitle {
 
 export interface SubtitleFile {
   name: string;
-  subtitles: Subtitle[];
+  subtitles: SubtitleBlock[];
 }
 
 export interface VideoFile {

@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import type { PreferencesState, RightPanelTab, VideoFile } from "@/shared/types/subtitle";
 import { defaultPreferences } from "@/shared/types/subtitle";
 
@@ -30,49 +30,60 @@ const storage =
   typeof window === "undefined" ? undefined : createJSONStorage<UiState>(() => window.localStorage);
 
 export const useUiStore = create<UiState>()(
-  persist(
-    (set) => ({
-      selectedSubtitleId: null,
-      rightPanelTab: "preview",
-      isPreferencesOpen: false,
-      isUploadModalOpen: false,
-      isExportModalOpen: false,
-      preferences: { ...defaultPreferences },
-      videoFile: null,
-      currentTime: 0,
-      isPlaying: false,
-      setSelectedSubtitleId: (id) => set({ selectedSubtitleId: id }),
-      setRightPanelTab: (tab) => set({ rightPanelTab: tab }),
-      setIsPreferencesOpen: (open) => set({ isPreferencesOpen: open }),
-      setIsUploadModalOpen: (open) => set({ isUploadModalOpen: open }),
-      setIsExportModalOpen: (open) => set({ isExportModalOpen: open }),
-      updatePreferences: (updates) =>
-        set((state) => ({ preferences: { ...state.preferences, ...updates } })),
-      setVideoFile: (file) => set({ videoFile: file }),
-      setCurrentTime: (time) => set({ currentTime: time }),
-      setIsPlaying: (playing) => set({ isPlaying: playing }),
-    }),
-    {
-      name: "fixsrt-ui",
-      storage,
-      version: 1,
-      partialize: (state) => ({
-        preferences: {
-          theme: state.preferences.theme,
-          language: state.preferences.language,
-        },
+  devtools(
+    persist(
+      (set) => ({
+        selectedSubtitleId: null,
+        rightPanelTab: "preview",
+        isPreferencesOpen: false,
+        isUploadModalOpen: false,
+        isExportModalOpen: false,
+        preferences: { ...defaultPreferences },
+        videoFile: null,
+        currentTime: 0,
+        isPlaying: false,
+        setSelectedSubtitleId: (id) => set({ selectedSubtitleId: id }),
+        setRightPanelTab: (tab) => set({ rightPanelTab: tab }),
+        setIsPreferencesOpen: (open) => set({ isPreferencesOpen: open }),
+        setIsUploadModalOpen: (open) => set({ isUploadModalOpen: open }),
+        setIsExportModalOpen: (open) => set({ isExportModalOpen: open }),
+        updatePreferences: (updates) =>
+          set((state) => ({ preferences: { ...state.preferences, ...updates } })),
+        setVideoFile: (file) => set({ videoFile: file }),
+        setCurrentTime: (time) => set({ currentTime: time }),
+        setIsPlaying: (playing) => set({ isPlaying: playing }),
       }),
-      merge: (persisted, current) => {
-        const persistedState = persisted as Partial<UiState>;
-        return {
-          ...current,
-          ...persistedState,
+      {
+        name: "fixsrt-ui",
+        storage,
+        version: 1,
+        partialize: (state) => ({
           preferences: {
-            ...current.preferences,
-            ...persistedState.preferences,
+            theme: state.preferences.theme,
+            language: state.preferences.language,
           },
-        };
+        }),
+        merge: (persisted, current) => {
+          const persistedState = persisted as Partial<UiState>;
+          return {
+            ...current,
+            ...persistedState,
+            preferences: {
+              ...current.preferences,
+              ...persistedState.preferences,
+            },
+          };
+        },
+        onRehydrateStorage: () => (_state, error) => {
+          if (process.env.NODE_ENV === "production") return;
+          if (error) {
+            console.error("FixSRT UI store failed to rehydrate.", error);
+            return;
+          }
+          console.info("FixSRT UI store rehydrated.");
+        },
       },
-    },
+    ),
+    { name: "FixSRT/UI", enabled: process.env.NODE_ENV !== "production" },
   ),
 );

@@ -7,6 +7,7 @@ import { Toaster } from "@/shared/ui/toaster";
 import { Toaster as Sonner } from "@/shared/ui/sonner";
 import { useUiStore } from "@/shared/store/uiStore";
 import type { PreferencesState } from "@/shared/types/subtitle";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 
 function ThemeSync() {
   const theme = useUiStore((state) => state.preferences.theme);
@@ -37,6 +38,15 @@ function ThemeSync() {
   return null;
 }
 
+function PersistGate() {
+  useEffect(() => {
+    useUiStore.persist.rehydrate();
+    useSubtitlesStore.persist.rehydrate();
+  }, []);
+
+  return null;
+}
+
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
 
@@ -46,6 +56,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <Toaster />
         <Sonner />
         <ThemeSync />
+        <PersistGate />
         {children}
       </TooltipProvider>
     </QueryClientProvider>

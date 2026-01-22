@@ -4,9 +4,7 @@ import { useCallback, useState } from "react";
 import { FileText, Film, Upload, Check } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/ui/dialog";
-import { parseSRT } from "@/shared/utils/srtParser";
 import { cn } from "@/shared/lib/utils";
-import type { Subtitle } from "@/shared/types/subtitle";
 import { useUiStore } from "@/shared/store/uiStore";
 import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 
@@ -83,18 +81,17 @@ export function UploadModal() {
   const setVideoFile = useUiStore((state) => state.setVideoFile);
   const videoFile = useUiStore((state) => state.videoFile);
   const setSelectedSubtitleId = useUiStore((state) => state.setSelectedSubtitleId);
-  const loadSubtitles = useSubtitlesStore((state) => state.loadSubtitles);
+  const loadSrtContent = useSubtitlesStore((state) => state.loadSrtContent);
 
   const [pendingSrtFile, setPendingSrtFile] = useState<{
     name: string;
-    subtitles: Subtitle[];
+    content: string;
   } | null>(null);
   const [pendingVideoFile, setPendingVideoFile] = useState<{ name: string; url: string } | null>(null);
 
   const handleSrtSelect = useCallback(async (file: File) => {
     const content = await file.text();
-    const subtitles = parseSRT(content);
-    setPendingSrtFile({ name: file.name, subtitles });
+    setPendingSrtFile({ name: file.name, content });
   }, []);
 
   const handleVideoSelect = useCallback((file: File) => {
@@ -104,7 +101,7 @@ export function UploadModal() {
 
   const handleConfirm = useCallback(() => {
     if (pendingSrtFile) {
-      loadSubtitles(pendingSrtFile.subtitles, pendingSrtFile.name);
+      loadSrtContent(pendingSrtFile.content, pendingSrtFile.name);
       setSelectedSubtitleId(null);
     }
     if (pendingVideoFile) {
@@ -120,7 +117,7 @@ export function UploadModal() {
   }, [
     pendingSrtFile,
     pendingVideoFile,
-    loadSubtitles,
+    loadSrtContent,
     setIsUploadModalOpen,
     setSelectedSubtitleId,
     setVideoFile,
