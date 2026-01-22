@@ -37,7 +37,52 @@ type TimelineBlockProps = {
   left: number;
   width: number;
   isSelected: boolean;
+  showNumber: boolean;
+  showText: boolean;
   onSelect: (id: string) => void;
+};
+
+const splitSubtitleText = (text: string): { left: string; right: string } => {
+  if (!text) return { left: "", right: "" };
+
+  const newlineIndices: number[] = [];
+  for (let i = 0; i < text.length; i += 1) {
+    if (text[i] === "\n") newlineIndices.push(i);
+  }
+
+  if (newlineIndices.length > 0) {
+    const splitIndex = newlineIndices[Math.floor(newlineIndices.length / 2)];
+    return {
+      left: text.slice(0, splitIndex).trimEnd(),
+      right: text.slice(splitIndex + 1).trimStart(),
+    };
+  }
+
+  const mid = Math.floor(text.length / 2);
+  let leftIndex = mid;
+  let rightIndex = mid;
+
+  while (leftIndex > 0 || rightIndex < text.length) {
+    if (leftIndex > 0 && /\s/.test(text[leftIndex])) {
+      return {
+        left: text.slice(0, leftIndex).trimEnd(),
+        right: text.slice(leftIndex).trimStart(),
+      };
+    }
+    if (rightIndex < text.length && /\s/.test(text[rightIndex])) {
+      return {
+        left: text.slice(0, rightIndex).trimEnd(),
+        right: text.slice(rightIndex).trimStart(),
+      };
+    }
+    leftIndex -= 1;
+    rightIndex += 1;
+  }
+
+  return {
+    left: text.slice(0, mid).trimEnd(),
+    right: text.slice(mid).trimStart(),
+  };
 };
 
 const parseDragId = (id: string): DragTarget | null => {
@@ -47,7 +92,32 @@ const parseDragId = (id: string): DragTarget | null => {
   return { mode, subtitleId } as DragTarget;
 };
 
-function TimelineBlock({ subtitle, left, width, isSelected, onSelect }: TimelineBlockProps) {
+const computeDragTimes = (state: DragState, deltaSeconds: number) => {
+  const { mode, startTime, endTime } = state;
+  if (mode === "start") {
+    const nextStart = Math.min(endTime - 0.1, Math.max(0, startTime + deltaSeconds));
+    return { startTime: nextStart, endTime };
+  }
+
+  if (mode === "end") {
+    const nextEnd = Math.max(startTime + 0.1, endTime + deltaSeconds);
+    return { startTime, endTime: nextEnd };
+  }
+
+  const duration = endTime - startTime;
+  const nextStart = Math.max(0, startTime + deltaSeconds);
+  return { startTime: nextStart, endTime: nextStart + duration };
+};
+
+function TimelineBlock({
+  subtitle,
+  left,
+  width,
+  isSelected,
+  showNumber,
+  showText,
+  onSelect,
+}: TimelineBlockProps) {
   const move = useDraggable({ id: `move::${subtitle.id}` });
   const start = useDraggable({ id: `start::${subtitle.id}` });
   const end = useDraggable({ id: `end::${subtitle.id}` });
@@ -102,8 +172,9 @@ function TimelineBlock({ subtitle, left, width, isSelected, onSelect }: Timeline
         onPointerDown={handleEndPointerDown}
       />
 
-      <div className="px-2 py-1 truncate text-xs text-primary-foreground">
-        {subtitle.index}
+      <div className="px-2 py-1 text-xs text-primary-foreground">
+        {showNumber && <div className="font-mono">#{subtitle.index}</div>}
+        {showText && <div className="mt-1 truncate">{subtitle.text}</div>}
       </div>
     </div>
   );
@@ -112,6 +183,7 @@ function TimelineBlock({ subtitle, left, width, isSelected, onSelect }: Timeline
 export function Timeline() {
   const subtitles = useSubtitlesStore((state) => state.subtitles);
   const updateSubtitle = useSubtitlesStore((state) => state.updateSubtitle);
+  const setSubtitles = useSubtitlesStore((state) => state.setSubtitles);
   const selectedSubtitleId = useUiStore((state) => state.selectedSubtitleId);
   const setSelectedSubtitleId = useUiStore((state) => state.setSelectedSubtitleId);
   const selectedGapId = useUiStore((state) => state.selectedGapId);
@@ -119,12 +191,18 @@ export function Timeline() {
   const currentTime = useUiStore((state) => state.currentTime);
   const setCurrentTime = useUiStore((state) => state.setCurrentTime);
   const videoFile = useUiStore((state) => state.videoFile);
+  const preferences = useUiStore((state) => state.preferences);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [secondsPerUnit, setSecondsPerUnit] = useState(10);
   const dragStateRef = useRef<DragState | null>(null);
+  const [dragPreview, setDragPreview] = useState<{
+    subtitleId: string;
+    mode: DragMode;
+    deltaSeconds: number;
+  } | null>(null);
 
   // Calculate total duration (seconds).
   const maxTime = Math.max(
@@ -138,10 +216,25 @@ export function Timeline() {
   const pxPerSecond = viewportWidth > 0 ? viewportWidth / visibleSeconds : 0.1;
   const trackWidth = Math.max(viewportWidth, maxTime * pxPerSecond);
   const markerCount = Math.ceil(maxTime / secondsPerUnit) + 1;
+  const ticks = useMemo(() => {
+    const spacing = secondsPerUnit / 4;
+    const totalTicks = Math.ceil(maxTime / spacing);
+    const items: { time: number; size: "major" | "mid" | "minor" }[] = [];
+
+    for (let i = 0; i <= totalTicks; i += 1) {
+      const time = i * spacing;
+      if (time > maxTime) break;
+      const mod = i % 4;
+      const size = mod === 0 ? "major" : mod === 2 ? "mid" : "minor";
+      items.push({ time, size });
+    }
+
+    return items;
+  }, [maxTime, secondsPerUnit]);
 
   const gaps = useMemo(() => {
     const ordered = [...subtitles].sort((a, b) => a.startTime - b.startTime);
-    const result: { id: string; start: number; end: number }[] = [];
+    const result: { id: string; start: number; end: number; leftId: string; rightId: string }[] = [];
     for (let i = 0; i < ordered.length - 1; i += 1) {
       const start = ordered[i].endTime;
       const end = ordered[i + 1].startTime;
@@ -150,10 +243,91 @@ export function Timeline() {
         id: `gap-${i}-${Math.round(start * 1000)}-${Math.round(end * 1000)}`,
         start,
         end,
+        leftId: ordered[i].id,
+        rightId: ordered[i + 1].id,
       });
     }
     return result;
   }, [subtitles]);
+
+  const activeSubtitle = useMemo(
+    () =>
+      subtitles.find(
+        (subtitle) => currentTime >= subtitle.startTime && currentTime <= subtitle.endTime,
+      ),
+    [currentTime, subtitles],
+  );
+
+  const canSplit =
+    Boolean(activeSubtitle) &&
+    currentTime > (activeSubtitle?.startTime ?? 0) + 0.1 &&
+    currentTime < (activeSubtitle?.endTime ?? 0) - 0.1;
+
+  const handleMergeSelectedGap = useCallback(() => {
+    if (!selectedGapId) return;
+    const gap = gaps.find((item) => item.id === selectedGapId);
+    if (!gap) return;
+    const left = subtitles.find((item) => item.id === gap.leftId);
+    const right = subtitles.find((item) => item.id === gap.rightId);
+    if (!left || !right) return;
+
+    const merged: SubtitleBlock = {
+      id: `merge-${left.id}-${right.id}-${Date.now()}`,
+      index: Math.min(left.index, right.index),
+      startTime: left.startTime,
+      endTime: right.endTime,
+      text: [left.text, right.text].filter(Boolean).join("\n"),
+    };
+
+    const next = subtitles.filter((item) => item.id !== left.id && item.id !== right.id);
+    next.push(merged);
+    next.sort((a, b) => a.startTime - b.startTime);
+    const reindexed = next.map((item, idx) => ({ ...item, index: idx + 1 }));
+
+    setSubtitles(reindexed);
+    setSelectedGapId(null);
+    setSelectedSubtitleId(merged.id);
+  }, [gaps, selectedGapId, setSelectedGapId, setSelectedSubtitleId, setSubtitles, subtitles]);
+
+  const handleSplitAtPlayhead = useCallback(() => {
+    if (!activeSubtitle || !canSplit) return;
+    const splitTime = currentTime;
+    const { left: leftText, right: rightText } = splitSubtitleText(activeSubtitle.text);
+    const stamp = Date.now();
+
+    const first: SubtitleBlock = {
+      id: `split-${activeSubtitle.id}-a-${stamp}`,
+      index: activeSubtitle.index,
+      startTime: activeSubtitle.startTime,
+      endTime: splitTime,
+      text: leftText,
+    };
+
+    const second: SubtitleBlock = {
+      id: `split-${activeSubtitle.id}-b-${stamp}`,
+      index: activeSubtitle.index + 1,
+      startTime: splitTime,
+      endTime: activeSubtitle.endTime,
+      text: rightText,
+    };
+
+    const next = subtitles.filter((item) => item.id !== activeSubtitle.id);
+    next.push(first, second);
+    next.sort((a, b) => a.startTime - b.startTime);
+    const reindexed = next.map((item, idx) => ({ ...item, index: idx + 1 }));
+
+    setSubtitles(reindexed);
+    setSelectedGapId(null);
+    setSelectedSubtitleId(second.id);
+  }, [
+    activeSubtitle,
+    canSplit,
+    currentTime,
+    setSelectedGapId,
+    setSelectedSubtitleId,
+    setSubtitles,
+    subtitles,
+  ]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -186,34 +360,33 @@ export function Timeline() {
       startTime: subtitle.startTime,
       endTime: subtitle.endTime,
     };
+    setDragPreview({
+      subtitleId: subtitle.id,
+      mode: dragTarget.mode,
+      deltaSeconds: 0,
+    });
     setSelectedSubtitleId(subtitle.id);
   }, [setSelectedSubtitleId, subtitles]);
 
   const handleDragMove = useCallback((event: DragMoveEvent) => {
     if (!dragStateRef.current || pxPerSecond <= 0) return;
     const deltaSeconds = event.delta.x / pxPerSecond;
-    const { subtitleId, mode, startTime, endTime } = dragStateRef.current;
+    setDragPreview({
+      subtitleId: dragStateRef.current.subtitleId,
+      mode: dragStateRef.current.mode,
+      deltaSeconds,
+    });
+  }, [pxPerSecond]);
 
-    if (mode === "start") {
-      const nextStart = Math.min(endTime - 0.1, Math.max(0, startTime + deltaSeconds));
-      updateSubtitle(subtitleId, { startTime: nextStart });
-      return;
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    if (dragStateRef.current && pxPerSecond > 0) {
+      const deltaSeconds = event.delta.x / pxPerSecond;
+      const nextTimes = computeDragTimes(dragStateRef.current, deltaSeconds);
+      updateSubtitle(dragStateRef.current.subtitleId, nextTimes);
     }
-
-    if (mode === "end") {
-      const nextEnd = Math.max(startTime + 0.1, endTime + deltaSeconds);
-      updateSubtitle(subtitleId, { endTime: nextEnd });
-      return;
-    }
-
-    const duration = endTime - startTime;
-    const nextStart = Math.max(0, startTime + deltaSeconds);
-    updateSubtitle(subtitleId, { startTime: nextStart, endTime: nextStart + duration });
-  }, [pxPerSecond, updateSubtitle]);
-
-  const handleDragEnd = useCallback((_event: DragEndEvent) => {
     dragStateRef.current = null;
-  }, []);
+    setDragPreview(null);
+  }, [pxPerSecond, updateSubtitle]);
 
   const handlePlayheadPointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
@@ -254,8 +427,34 @@ export function Timeline() {
       <div className="flex items-center justify-center px-3 py-2 border-b text-sm text-muted-foreground">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <UnfoldHorizontal className="h-5 w-5" aria-hidden="true" />
-            <FoldHorizontal className="h-5 w-5" aria-hidden="true" />
+            <button
+              type="button"
+              onClick={handleSplitAtPlayhead}
+              disabled={!canSplit}
+              className={cn(
+                "rounded p-1 transition-colors",
+                canSplit
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground/40 cursor-not-allowed",
+              )}
+              aria-label="Split subtitle at playhead"
+            >
+              <UnfoldHorizontal className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={handleMergeSelectedGap}
+              disabled={!selectedGapId}
+              className={cn(
+                "rounded p-1 transition-colors",
+                selectedGapId
+                  ? "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground/40 cursor-not-allowed",
+              )}
+              aria-label="Merge subtitles across selected gap"
+            >
+              <FoldHorizontal className="h-5 w-5" aria-hidden="true" />
+            </button>
           </div>
           <span className="relative inline-flex h-5 w-5 items-center justify-center">
             <Waves className="h-5 w-5" aria-hidden="true" />
@@ -305,15 +504,29 @@ export function Timeline() {
             >
               <div className="h-full select-none" style={{ width: `${trackWidth}px` }}>
               {/* Time markers */}
-              <div className="relative h-8 border-b flex items-end px-2 text-xs text-muted-foreground overflow-hidden">
-                {Array.from({ length: markerCount }, (_, i) => (
-                  <span
-                    key={i}
-                    className="absolute font-mono"
-                    style={{ left: `${i * secondsPerUnit * pxPerSecond}px` }}
-                  >
-                    {formatTimeDisplay(i * secondsPerUnit)}
-                  </span>
+                <div className="relative h-8 border-b px-2 text-xs text-muted-foreground overflow-hidden">
+                  <div className="absolute inset-0 pointer-events-none">
+                    {ticks.map((tick) => (
+                      <span
+                        key={`${tick.size}-${tick.time}`}
+                        className={cn(
+                          "absolute bottom-0 w-px bg-muted-foreground/40",
+                          tick.size === "major" && "h-4 bg-muted-foreground/60",
+                          tick.size === "mid" && "h-3 bg-muted-foreground/50",
+                          tick.size === "minor" && "h-2 bg-muted-foreground/30",
+                        )}
+                        style={{ left: `${tick.time * pxPerSecond}px` }}
+                      />
+                    ))}
+                  </div>
+                  {Array.from({ length: markerCount }, (_, i) => (
+                    <span
+                      key={i}
+                      className="absolute bottom-1 z-10 font-mono"
+                      style={{ left: `${i * secondsPerUnit * pxPerSecond}px` }}
+                    >
+                      {formatTimeDisplay(i * secondsPerUnit)}
+                    </span>
                 ))}
               </div>
 
@@ -359,23 +572,31 @@ export function Timeline() {
                     );
                   })}
 
-                  {/* Subtitle blocks */}
-                  {subtitles.map((subtitle) => {
-                    const left = subtitle.startTime * pxPerSecond;
-                    const width = (subtitle.endTime - subtitle.startTime) * pxPerSecond;
-                    const isSelected = subtitle.id === selectedSubtitleId;
+                {/* Subtitle blocks */}
+                {subtitles.map((subtitle) => {
+                  const preview =
+                    dragPreview && dragStateRef.current?.subtitleId === subtitle.id
+                      ? computeDragTimes(dragStateRef.current, dragPreview.deltaSeconds)
+                      : null;
+                  const startTime = preview?.startTime ?? subtitle.startTime;
+                  const endTime = preview?.endTime ?? subtitle.endTime;
+                  const left = startTime * pxPerSecond;
+                  const width = (endTime - startTime) * pxPerSecond;
+                  const isSelected = subtitle.id === selectedSubtitleId;
 
-                  return (
-                    <TimelineBlock
-                      key={subtitle.id}
-                      subtitle={subtitle}
-                      left={left}
-                      width={width}
-                      isSelected={isSelected}
-                      onSelect={setSelectedSubtitleId}
-                    />
-                  );
-                })}
+                    return (
+                      <TimelineBlock
+                        key={subtitle.id}
+                        subtitle={subtitle}
+                        left={left}
+                        width={width}
+                        isSelected={isSelected}
+                        showNumber={preferences.showTimelineNumber}
+                        showText={preferences.showTimelineText}
+                        onSelect={setSelectedSubtitleId}
+                      />
+                    );
+                  })}
               </div>
             </div>
             </ScrollArea>

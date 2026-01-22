@@ -27,6 +27,8 @@ export interface PreferencesState {
   showStartTime: boolean;
   showEndTime: boolean;
   showDuration: boolean;
+  showTimelineNumber: boolean;
+  showTimelineText: boolean;
 }
 
 export const defaultPreferences: PreferencesState = {
@@ -37,4 +39,6 @@ export const defaultPreferences: PreferencesState = {
   showStartTime: true,
   showEndTime: false,
   showDuration: true,
+  showTimelineNumber: true,
+  showTimelineText: false,
 };

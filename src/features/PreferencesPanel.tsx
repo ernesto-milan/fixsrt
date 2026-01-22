@@ -145,6 +145,37 @@ export function PreferencesPanel() {
               </div>
             </div>
           </div>
+
+          {/* Timeline Options */}
+          <div className="space-y-3">
+            <Label className="text-muted-foreground text-xs uppercase tracking-wide">
+              Timeline Display
+            </Label>
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="show-timeline-number" className="font-normal">
+                  Show number
+                </Label>
+                <Switch
+                  id="show-timeline-number"
+                  checked={preferences.showTimelineNumber}
+                  onCheckedChange={(checked) => updatePreferences({ showTimelineNumber: checked })}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="show-timeline-text" className="font-normal">
+                  Show text
+                </Label>
+                <Switch
+                  id="show-timeline-text"
+                  checked={preferences.showTimelineText}
+                  onCheckedChange={(checked) => updatePreferences({ showTimelineText: checked })}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>
