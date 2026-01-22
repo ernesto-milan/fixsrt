@@ -1,6 +1,5 @@
 "use client";
-
-import { Upload, Coffee, Settings } from "lucide-react";
+import { Download, Upload, Coffee, Settings } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useUiStore } from "@/shared/store/uiStore";
 import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
@@ -8,12 +7,28 @@ import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 export function Header() {
   const setIsUploadModalOpen = useUiStore((state) => state.setIsUploadModalOpen);
   const setIsPreferencesOpen = useUiStore((state) => state.setIsPreferencesOpen);
+  const setIsExportModalOpen = useUiStore((state) => state.setIsExportModalOpen);
   const subtitleFileName = useSubtitlesStore((state) => state.subtitleFileName);
+  const subtitlesCount = useSubtitlesStore((state) => state.subtitles.length);
+  const logoSrc = "/logo_full.png";
 
   return (
-    <header className="h-14 border-b bg-card flex items-center justify-between px-4">
+    <header className="border-b bg-card flex items-center justify-between px-4 py-2">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold tracking-tight">FixSRT</h1>
+        <div className="flex items-center">
+          <img src={logoSrc} alt="FixSRT" className="h-16 w-auto block" />
+          <span className="sr-only">FixSRT</span>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsExportModalOpen(true)}
+          className="gap-2"
+          disabled={subtitlesCount === 0}
+        >
+          <Download className="h-4 w-4" />
+          Export SRT
+        </Button>
         <Button 
           variant="outline" 
           size="sm"

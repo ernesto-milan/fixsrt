@@ -7,6 +7,7 @@ import { defaultPreferences } from "@/shared/types/subtitle";
 
 type UiState = {
   selectedSubtitleId: string | null;
+  selectedGapId: string | null;
   rightPanelTab: RightPanelTab;
   isPreferencesOpen: boolean;
   isUploadModalOpen: boolean;
@@ -16,6 +17,7 @@ type UiState = {
   currentTime: number;
   isPlaying: boolean;
   setSelectedSubtitleId: (id: string | null) => void;
+  setSelectedGapId: (id: string | null) => void;
   setRightPanelTab: (tab: RightPanelTab) => void;
   setIsPreferencesOpen: (open: boolean) => void;
   setIsUploadModalOpen: (open: boolean) => void;
@@ -34,6 +36,7 @@ export const useUiStore = create<UiState>()(
     persist(
       (set) => ({
         selectedSubtitleId: null,
+        selectedGapId: null,
         rightPanelTab: "preview",
         isPreferencesOpen: false,
         isUploadModalOpen: false,
@@ -42,7 +45,8 @@ export const useUiStore = create<UiState>()(
         videoFile: null,
         currentTime: 0,
         isPlaying: false,
-        setSelectedSubtitleId: (id) => set({ selectedSubtitleId: id }),
+        setSelectedSubtitleId: (id) => set({ selectedSubtitleId: id, selectedGapId: null }),
+        setSelectedGapId: (id) => set({ selectedGapId: id, selectedSubtitleId: null }),
         setRightPanelTab: (tab) => set({ rightPanelTab: tab }),
         setIsPreferencesOpen: (open) => set({ isPreferencesOpen: open }),
         setIsUploadModalOpen: (open) => set({ isUploadModalOpen: open }),

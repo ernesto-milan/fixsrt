@@ -27,7 +27,7 @@ export function SubtitleList() {
   }
 
   return (
-    <ScrollArea className="flex-1 scrollbar-thin">
+    <ScrollArea type="always" className="flex-1 min-h-0 scrollbar-thin">
       <div className="p-2 space-y-1">
         {subtitles.map((subtitle) => {
           const isSelected = subtitle.id === selectedSubtitleId;

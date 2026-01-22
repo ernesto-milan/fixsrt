@@ -5,6 +5,9 @@ import { AppProviders } from "./providers";
 export const metadata: Metadata = {
   title: "FixSRT Studio",
   description: "Subtitle editing and transformation tool",
+  icons: {
+    icon: "/fav.png",
+  },
 };
 
 export default function RootLayout({

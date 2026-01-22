@@ -12,11 +12,11 @@ export function RightPanel() {
   const setRightPanelTab = useUiStore((state) => state.setRightPanelTab);
 
   return (
-    <div className="flex flex-col h-full bg-card">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card">
       <Tabs 
         value={rightPanelTab} 
         onValueChange={(value) => setRightPanelTab(value as RightPanelTab)}
-        className="flex flex-col h-full"
+        className="flex h-full min-h-0 flex-col"
       >
         <div className="px-4 py-3 border-b">
           <TabsList className="w-full grid grid-cols-3">
@@ -26,15 +26,15 @@ export function RightPanel() {
           </TabsList>
         </div>
 
-        <TabsContent value="preview" className="flex-1 p-4 mt-0">
+        <TabsContent value="preview" className="flex-1 min-h-0 overflow-auto p-4 mt-0">
           <VideoPreview />
         </TabsContent>
 
-        <TabsContent value="text-rules" className="flex-1 p-4 mt-0">
+        <TabsContent value="text-rules" className="flex-1 min-h-0 overflow-auto p-4 mt-0">
           <TextRulesPanel />
         </TabsContent>
 
-        <TabsContent value="time-rules" className="flex-1 p-4 mt-0">
+        <TabsContent value="time-rules" className="flex-1 min-h-0 overflow-auto p-4 mt-0">
           <TimeRulesPanel />
         </TabsContent>
       </Tabs>
