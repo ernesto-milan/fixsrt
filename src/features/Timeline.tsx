@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { FoldHorizontal, Minus, Plus, Search, UnfoldHorizontal, Waves } from "lucide-react";
 import { formatTimeDisplay } from "@/shared/utils/srtParser";
+import { getSubtitleGaps } from "@/shared/utils/subtitleGaps";
 import { cn } from "@/shared/lib/utils";
 import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 import { useUiStore } from "@/shared/store/uiStore";
@@ -232,23 +233,7 @@ export function Timeline() {
     return items;
   }, [maxTime, secondsPerUnit]);
 
-  const gaps = useMemo(() => {
-    const ordered = [...subtitles].sort((a, b) => a.startTime - b.startTime);
-    const result: { id: string; start: number; end: number; leftId: string; rightId: string }[] = [];
-    for (let i = 0; i < ordered.length - 1; i += 1) {
-      const start = ordered[i].endTime;
-      const end = ordered[i + 1].startTime;
-      if (end <= start) continue;
-      result.push({
-        id: `gap-${i}-${Math.round(start * 1000)}-${Math.round(end * 1000)}`,
-        start,
-        end,
-        leftId: ordered[i].id,
-        rightId: ordered[i + 1].id,
-      });
-    }
-    return result;
-  }, [subtitles]);
+  const gaps = useMemo(() => getSubtitleGaps(subtitles), [subtitles]);
 
   const activeSubtitle = useMemo(
     () =>

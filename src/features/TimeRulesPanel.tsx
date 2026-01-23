@@ -1,103 +1,589 @@
 "use client";
 
-import { Button } from '@/shared/ui/button';
-import { Input } from '@/shared/ui/input';
-import { Label } from '@/shared/ui/label';
-import { Checkbox } from '@/shared/ui/checkbox';
-import { useToast } from '@/shared/hooks/use-toast';
+import { useState } from "react";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
+import { cn } from "@/shared/lib/utils";
+import { useToast } from "@/shared/hooks/use-toast";
+import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
+import { applyTimeRule, type TimeRule, type TimeRuleOptions } from "@/shared/utils/timeRules";
+
+type ShiftDirection = TimeRuleOptions["shiftDirection"];
 
 export function TimeRulesPanel() {
   const { toast } = useToast();
+  const subtitles = useSubtitlesStore((state) => state.subtitles);
+  const timeRulesSnapshot = useSubtitlesStore((state) => state.timeRulesSnapshot);
+  const setSubtitles = useSubtitlesStore((state) => state.setSubtitles);
+  const setTimeRulesSnapshot = useSubtitlesStore((state) => state.setTimeRulesSnapshot);
+  const revertTimeRulesSnapshot = useSubtitlesStore((state) => state.revertTimeRulesSnapshot);
+  const [activeRule, setActiveRule] = useState<TimeRule>("max-cps");
+  const [maxCps, setMaxCps] = useState("");
+  const [maxCpsWindowMs, setMaxCpsWindowMs] = useState("");
+  const [maxCpsDontCutWords, setMaxCpsDontCutWords] = useState(true);
+  const [minCps, setMinCps] = useState("");
+  const [minCpsWindowMs, setMinCpsWindowMs] = useState("");
+  const [minCpsDontCutWords, setMinCpsDontCutWords] = useState(true);
+  const [maxWps, setMaxWps] = useState("");
+  const [maxWpsWindowMs, setMaxWpsWindowMs] = useState("");
+  const [minWps, setMinWps] = useState("");
+  const [minWpsWindowMs, setMinWpsWindowMs] = useState("");
+  const [minGap, setMinGap] = useState("");
+  const [maxGap, setMaxGap] = useState("");
+  const [mergeGap, setMergeGap] = useState("");
+  const [shiftMs, setShiftMs] = useState("");
+  const [shiftDirection, setShiftDirection] = useState<ShiftDirection>("forward");
+  const [trimMs, setTrimMs] = useState("");
+  const isMaxCpsActive = activeRule === "max-cps";
+  const isMinCpsActive = activeRule === "min-cps";
+  const isMaxWpsActive = activeRule === "max-wps";
+  const isMinWpsActive = activeRule === "min-wps";
+  const isMinGapActive = activeRule === "min-gap";
+  const isMaxGapActive = activeRule === "max-gap";
+  const isMergeGapActive = activeRule === "merge-gap";
+  const isShiftActive = activeRule === "shift";
+  const isFixOverlapsActive = activeRule === "fix-overlaps";
+  const isTrimActive = activeRule === "trim-duration";
+
+  const parsePositiveNumber = (value: string) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) return null;
+    return parsed;
+  };
 
   const handleApply = () => {
+    if (subtitles.length === 0) {
+      toast({
+        title: "No subtitles loaded",
+        description: "Upload a subtitle file to apply time rules.",
+      });
+      return;
+    }
+
+    const options: TimeRuleOptions = {
+      maxCps: parsePositiveNumber(maxCps),
+      maxCpsWindowMs: parsePositiveNumber(maxCpsWindowMs),
+      maxCpsDontCutWords,
+      minCps: parsePositiveNumber(minCps),
+      minCpsWindowMs: parsePositiveNumber(minCpsWindowMs),
+      minCpsDontCutWords,
+      maxWps: parsePositiveNumber(maxWps),
+      maxWpsWindowMs: parsePositiveNumber(maxWpsWindowMs),
+      minWps: parsePositiveNumber(minWps),
+      minWpsWindowMs: parsePositiveNumber(minWpsWindowMs),
+      minGapMs: parsePositiveNumber(minGap),
+      maxGapMs: parsePositiveNumber(maxGap),
+      mergeGapMs: parsePositiveNumber(mergeGap),
+      shiftMs: parsePositiveNumber(shiftMs),
+      shiftDirection,
+      trimMs: parsePositiveNumber(trimMs),
+    };
+
+    const nextSubtitles = applyTimeRule(subtitles, activeRule, options);
+    if (nextSubtitles === subtitles) {
+      toast({
+        title: "No changes applied",
+        description: "Check the rule inputs and try again.",
+      });
+      return;
+    }
+
+    setTimeRulesSnapshot();
+    setSubtitles(nextSubtitles);
     toast({
-      title: "Time rules applied",
+      title: "Time rule applied",
       description: "Your timing adjustments have been applied to all subtitles.",
+    });
+  };
+
+  const handleRevert = () => {
+    if (!timeRulesSnapshot) {
+      toast({
+        title: "Nothing to revert",
+        description: "Apply a time rule to create a snapshot first.",
+      });
+      return;
+    }
+
+    revertTimeRulesSnapshot();
+    toast({
+      title: "Changes reverted",
+      description: "Subtitles were restored to the state before the last apply.",
     });
   };
 
   return (
     <div className="flex-1 min-h-0 flex flex-col">
-      <div className="flex-1 min-h-0 overflow-auto space-y-6 p-1">
-        {/* Minimum duration */}
-        <div className="space-y-2">
-          <Label htmlFor="min-duration">Minimum duration (seconds)</Label>
-          <Input 
-            id="min-duration" 
-            type="number" 
-            placeholder="0.5" 
-            step="0.1"
-            className="max-w-[120px]"
-          />
-        </div>
-
-        {/* Maximum duration */}
-        <div className="space-y-2">
-          <Label htmlFor="max-duration">Maximum duration (seconds)</Label>
-          <Input 
-            id="max-duration" 
-            type="number" 
-            placeholder="7.0" 
-            step="0.1"
-            className="max-w-[120px]"
-          />
-        </div>
-
-        {/* Minimum gap */}
-        <div className="space-y-2">
-          <Label htmlFor="min-gap">Minimum gap between subtitles (ms)</Label>
-          <Input 
-            id="min-gap" 
-            type="number" 
-            placeholder="100" 
-            step="10"
-            className="max-w-[120px]"
-          />
-        </div>
-
-        {/* Shift all timings */}
-        <div className="space-y-2">
-          <Label htmlFor="shift-time">Shift all timings (ms)</Label>
-          <Input 
-            id="shift-time" 
-            type="number" 
-            placeholder="0" 
-            step="100"
-            className="max-w-[120px]"
-          />
-          <p className="text-xs text-muted-foreground">
-            Positive values delay subtitles, negative values advance them
-          </p>
-        </div>
-
-        {/* Checkboxes */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <Checkbox id="snap-frames" />
-            <Label htmlFor="snap-frames" className="font-normal cursor-pointer">
-              Snap to frame boundaries (24fps)
-            </Label>
+      <div className="flex-1 min-h-0 overflow-auto p-1">
+        <div className="flex flex-wrap items-stretch gap-4">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("max-cps")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("max-cps");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isMaxCpsActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="max-cps" className="text-sm font-medium">
+                Max characters per window
+              </Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  id="max-cps"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="15"
+                  className="max-w-[160px]"
+                  value={maxCps}
+                  onChange={(event) => setMaxCps(event.target.value)}
+                  disabled={!isMaxCpsActive}
+                />
+                <span className="text-xs text-muted-foreground">chars</span>
+                <span className="text-xs text-muted-foreground">per</span>
+                <Input
+                  id="max-cps-window"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="1000"
+                  className="max-w-[160px]"
+                  value={maxCpsWindowMs}
+                  onChange={(event) => setMaxCpsWindowMs(event.target.value)}
+                  disabled={!isMaxCpsActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="max-cps-dont-cut"
+                  checked={maxCpsDontCutWords}
+                  onCheckedChange={(checked) => setMaxCpsDontCutWords(Boolean(checked))}
+                  disabled={!isMaxCpsActive}
+                />
+                <Label htmlFor="max-cps-dont-cut" className="font-normal cursor-pointer">
+                  Don&apos;t cut words
+                </Label>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Checkbox id="fix-overlaps" />
-            <Label htmlFor="fix-overlaps" className="font-normal cursor-pointer">
-              Fix overlapping subtitles
-            </Label>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("min-cps")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("min-cps");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isMinCpsActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="min-cps" className="text-sm font-medium">
+                Min characters per window
+              </Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  id="min-cps"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="10"
+                  className="max-w-[160px]"
+                  value={minCps}
+                  onChange={(event) => setMinCps(event.target.value)}
+                  disabled={!isMinCpsActive}
+                />
+                <span className="text-xs text-muted-foreground">chars</span>
+                <span className="text-xs text-muted-foreground">per</span>
+                <Input
+                  id="min-cps-window"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="1000"
+                  className="max-w-[160px]"
+                  value={minCpsWindowMs}
+                  onChange={(event) => setMinCpsWindowMs(event.target.value)}
+                  disabled={!isMinCpsActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="min-cps-dont-cut"
+                  checked={minCpsDontCutWords}
+                  onCheckedChange={(checked) => setMinCpsDontCutWords(Boolean(checked))}
+                  disabled={!isMinCpsActive}
+                />
+                <Label htmlFor="min-cps-dont-cut" className="font-normal cursor-pointer">
+                  Don&apos;t cut words
+                </Label>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Checkbox id="extend-short" />
-            <Label htmlFor="extend-short" className="font-normal cursor-pointer">
-              Extend short subtitles to minimum duration
-            </Label>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("max-wps")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("max-wps");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isMaxWpsActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="max-wps" className="text-sm font-medium">
+                Max words per window
+              </Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  id="max-wps"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="3"
+                  className="max-w-[160px]"
+                  value={maxWps}
+                  onChange={(event) => setMaxWps(event.target.value)}
+                  disabled={!isMaxWpsActive}
+                />
+                <span className="text-xs text-muted-foreground">words</span>
+                <span className="text-xs text-muted-foreground">per</span>
+                <Input
+                  id="max-wps-window"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="1000"
+                  className="max-w-[160px]"
+                  value={maxWpsWindowMs}
+                  onChange={(event) => setMaxWpsWindowMs(event.target.value)}
+                  disabled={!isMaxWpsActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("min-wps")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("min-wps");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isMinWpsActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="min-wps" className="text-sm font-medium">
+                Min words per window
+              </Label>
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  id="min-wps"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="2"
+                  className="max-w-[160px]"
+                  value={minWps}
+                  onChange={(event) => setMinWps(event.target.value)}
+                  disabled={!isMinWpsActive}
+                />
+                <span className="text-xs text-muted-foreground">words</span>
+                <span className="text-xs text-muted-foreground">per</span>
+                <Input
+                  id="min-wps-window"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="1000"
+                  className="max-w-[160px]"
+                  value={minWpsWindowMs}
+                  onChange={(event) => setMinWpsWindowMs(event.target.value)}
+                  disabled={!isMinWpsActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("min-gap")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("min-gap");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isMinGapActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="min-gap" className="text-sm font-medium">
+                Minimum gap between subtitles
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="min-gap"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="100"
+                  className="max-w-[160px]"
+                  value={minGap}
+                  onChange={(event) => setMinGap(event.target.value)}
+                  disabled={!isMinGapActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("max-gap")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("max-gap");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isMaxGapActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="max-gap" className="text-sm font-medium">
+                Maximum gap between subtitles
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="max-gap"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="1000"
+                  className="max-w-[160px]"
+                  value={maxGap}
+                  onChange={(event) => setMaxGap(event.target.value)}
+                  disabled={!isMaxGapActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("merge-gap")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("merge-gap");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isMergeGapActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="merge-gap" className="text-sm font-medium">
+                Merge subtitles if gap &lt;
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="merge-gap"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="80"
+                  className="max-w-[160px]"
+                  value={mergeGap}
+                  onChange={(event) => setMergeGap(event.target.value)}
+                  disabled={!isMergeGapActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Consecutive subtitles closer than this gap will be merged.
+              </p>
+            </div>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("shift")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("shift");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isShiftActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-3">
+              <Label htmlFor="shift-ms" className="text-sm font-medium">
+                Shift all subtitles by
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="shift-ms"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="500"
+                  className="max-w-[160px]"
+                  value={shiftMs}
+                  onChange={(event) => setShiftMs(event.target.value)}
+                  disabled={!isShiftActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+              <RadioGroup
+                value={shiftDirection}
+                onValueChange={(value) => setShiftDirection(value as ShiftDirection)}
+                className="grid gap-3"
+              >
+                <Label className="flex items-center gap-2 font-normal">
+                  <RadioGroupItem value="forward" disabled={!isShiftActive} />
+                  Forward
+                </Label>
+                <Label className="flex items-center gap-2 font-normal">
+                  <RadioGroupItem value="backward" disabled={!isShiftActive} />
+                  Backward
+                </Label>
+              </RadioGroup>
+            </div>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("fix-overlaps")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("fix-overlaps");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isFixOverlapsActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Fix overlapping subtitles</Label>
+              <p className="text-xs text-muted-foreground">
+                Adjust overlapping subtitles to ensure correct order.
+              </p>
+            </div>
+          </div>
+
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => setActiveRule("trim-duration")}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                setActiveRule("trim-duration");
+              }
+            }}
+            className={cn(
+              "rounded-lg border bg-card p-4 space-y-4 transition-colors",
+              isTrimActive
+                ? "border-primary/40 shadow-sm"
+                : "border-border/60 opacity-60 hover:opacity-80",
+            )}
+          >
+            <div className="space-y-2">
+              <Label htmlFor="trim-duration" className="text-sm font-medium">
+                Trim duration by
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="trim-duration"
+                  type="number"
+                  min="1"
+                  step="1"
+                  placeholder="500"
+                  className="max-w-[160px]"
+                  value={trimMs}
+                  onChange={(event) => setTrimMs(event.target.value)}
+                  disabled={!isTrimActive}
+                />
+                <span className="text-xs text-muted-foreground">ms</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Apply button */}
-      <div className="pt-4 border-t mt-auto">
-        <Button onClick={handleApply} className="w-full">
+      <div className="pt-4 border-t mt-auto flex items-center justify-end gap-3">
+        <Button variant="outline" className="min-w-[140px]" onClick={handleRevert}>
+          Revert Rules
+        </Button>
+        <Button className="min-w-[160px]" onClick={handleApply}>
           Apply Time Rules
         </Button>
       </div>

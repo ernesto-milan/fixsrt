@@ -9,6 +9,7 @@ type SubtitlesState = {
   originalSrtText: string | null;
   originalSubtitles: SubtitleBlock[];
   subtitles: SubtitleBlock[];
+  timeRulesSnapshot: SubtitleBlock[] | null;
   subtitleFileName: string | null;
   loadSrtContent: (content: string, fileName?: string | null) => void;
   loadSubtitles: (
@@ -17,6 +18,8 @@ type SubtitlesState = {
     originalSrtText?: string | null,
   ) => void;
   setSubtitles: (subtitles: SubtitleBlock[]) => void;
+  setTimeRulesSnapshot: () => void;
+  revertTimeRulesSnapshot: () => void;
   updateSubtitle: (id: string, updates: Partial<SubtitleBlock>) => void;
   resetToOriginal: () => void;
   setOriginalSrtText: (content: string | null) => void;
@@ -35,6 +38,7 @@ export const useSubtitlesStore = create<SubtitlesState>()(
         originalSrtText: null,
         originalSubtitles: [],
         subtitles: [],
+        timeRulesSnapshot: null,
         subtitleFileName: null,
         loadSrtContent: (content, fileName = null) => {
           const subtitles = transformSrtToSubtitles(content);
@@ -44,6 +48,7 @@ export const useSubtitlesStore = create<SubtitlesState>()(
             originalSrtText: content,
             originalSubtitles: baseline,
             subtitles: editable,
+            timeRulesSnapshot: null,
             subtitleFileName: fileName,
           });
         },
@@ -54,10 +59,22 @@ export const useSubtitlesStore = create<SubtitlesState>()(
             originalSrtText,
             originalSubtitles: baseline,
             subtitles: editable,
+            timeRulesSnapshot: null,
             subtitleFileName: fileName,
           });
         },
         setSubtitles: (subtitles) => set({ subtitles }),
+        setTimeRulesSnapshot: () =>
+          set((state) => ({
+            timeRulesSnapshot: state.subtitles.map((subtitle) => ({ ...subtitle })),
+          })),
+        revertTimeRulesSnapshot: () =>
+          set((state) => {
+            if (!state.timeRulesSnapshot) return {};
+            return {
+              subtitles: state.timeRulesSnapshot.map((subtitle) => ({ ...subtitle })),
+            };
+          }),
         updateSubtitle: (id, updates) =>
           set((state) => ({
             subtitles: state.subtitles.map((subtitle) =>

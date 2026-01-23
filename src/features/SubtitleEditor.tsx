@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { Label } from "@/shared/ui/label";
 import { formatTimeDisplay } from "@/shared/utils/srtParser";
 import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 import { useUiStore } from "@/shared/store/uiStore";
+import { getSubtitleGaps } from "@/shared/utils/subtitleGaps";
 
 export function SubtitleEditor() {
   const subtitles = useSubtitlesStore((state) => state.subtitles);
   const updateSubtitle = useSubtitlesStore((state) => state.updateSubtitle);
   const selectedSubtitleId = useUiStore((state) => state.selectedSubtitleId);
+  const selectedGapId = useUiStore((state) => state.selectedGapId);
 
   const selectedSubtitle = subtitles.find((subtitle) => subtitle.id === selectedSubtitleId);
+  const selectedGap = useMemo(() => {
+    if (!selectedGapId) return null;
+    return getSubtitleGaps(subtitles).find((gap) => gap.id === selectedGapId) ?? null;
+  }, [selectedGapId, subtitles]);
 
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
@@ -103,6 +109,46 @@ export function SubtitleEditor() {
       </div>
     </div>
   );
+
+  if (!selectedSubtitle && selectedGap) {
+    const gapDuration = Math.max(0, selectedGap.end - selectedGap.start);
+    return (
+      <div className="p-4 border-t bg-panel">
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="gap-start" className="text-xs">Gap Start</Label>
+              <Input
+                id="gap-start"
+                value={formatTimeDisplay(selectedGap.start)}
+                className="font-mono text-sm h-9"
+                disabled
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="gap-end" className="text-xs">Gap End</Label>
+              <Input
+                id="gap-end"
+                value={formatTimeDisplay(selectedGap.end)}
+                className="font-mono text-sm h-9"
+                disabled
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="gap-duration" className="text-xs">Gap Length</Label>
+            <Input
+              id="gap-duration"
+              value={formatTimeDisplay(gapDuration)}
+              className="font-mono text-sm h-9"
+              disabled
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!selectedSubtitle) {
     return (
