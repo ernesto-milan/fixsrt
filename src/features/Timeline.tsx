@@ -11,7 +11,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { FoldHorizontal, Minus, Plus, Search, UnfoldHorizontal, Waves } from "lucide-react";
+import { Columns3, FoldHorizontal, Minus, Plus, Search, UnfoldHorizontal } from "lucide-react";
 import { formatTimeDisplay } from "@/shared/utils/srtParser";
 import { getSubtitleGaps } from "@/shared/utils/subtitleGaps";
 import { cn } from "@/shared/lib/utils";
@@ -148,8 +148,8 @@ function TimelineBlock({
       className={cn(
         "absolute top-3 h-24 rounded cursor-pointer transition-colors",
         isSelected
-          ? "bg-timeline-block-active ring-2 ring-primary ring-offset-1"
-          : "bg-timeline-block hover:bg-timeline-block-active/80",
+          ? "bg-timeline-block-active/80 ring-2 ring-primary ring-offset-1"
+          : "bg-timeline-block/60 hover:bg-timeline-block-active/70",
       )}
       style={{ left: `${left}px`, width: `${Math.max(width, 4)}px` }}
       {...move.attributes}
@@ -197,6 +197,7 @@ export function Timeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
   const [secondsPerUnit, setSecondsPerUnit] = useState(10);
   const dragStateRef = useRef<DragState | null>(null);
   const [dragPreview, setDragPreview] = useState<{
@@ -218,20 +219,30 @@ export function Timeline() {
   const trackWidth = Math.max(viewportWidth, maxTime * pxPerSecond);
   const markerCount = Math.ceil(maxTime / secondsPerUnit) + 1;
   const ticks = useMemo(() => {
-    const spacing = secondsPerUnit / 4;
+    const ticksPerUnit = 10;
+    const spacing = secondsPerUnit / ticksPerUnit;
     const totalTicks = Math.ceil(maxTime / spacing);
     const items: { time: number; size: "major" | "mid" | "minor" }[] = [];
+    const midMark = ticksPerUnit % 2 === 0 ? ticksPerUnit / 2 : null;
 
     for (let i = 0; i <= totalTicks; i += 1) {
       const time = i * spacing;
       if (time > maxTime) break;
-      const mod = i % 4;
-      const size = mod === 0 ? "major" : mod === 2 ? "mid" : "minor";
+      const mod = ticksPerUnit > 0 ? i % ticksPerUnit : 0;
+      const size =
+        mod === 0 ? "major" : midMark !== null && mod === midMark ? "mid" : "minor";
       items.push({ time, size });
     }
 
     return items;
   }, [maxTime, secondsPerUnit]);
+
+  const isPlayheadVisible = useMemo(() => {
+    if (pxPerSecond <= 0 || viewportWidth <= 0) return true;
+    if (trackWidth <= viewportWidth) return true;
+    const playheadX = currentTime * pxPerSecond;
+    return playheadX >= scrollLeft && playheadX <= scrollLeft + viewportWidth;
+  }, [currentTime, pxPerSecond, scrollLeft, trackWidth, viewportWidth]);
 
   const gaps = useMemo(() => getSubtitleGaps(subtitles), [subtitles]);
 
@@ -247,6 +258,7 @@ export function Timeline() {
     Boolean(activeSubtitle) &&
     currentTime > (activeSubtitle?.startTime ?? 0) + 0.1 &&
     currentTime < (activeSubtitle?.endTime ?? 0) - 0.1;
+  const canCenterPlayhead = !isPlayheadVisible;
 
   const handleMergeSelectedGap = useCallback(() => {
     if (!selectedGapId) return;
@@ -335,6 +347,15 @@ export function Timeline() {
     return () => observer.disconnect();
   }, [subtitles.length]);
 
+  useEffect(() => {
+    const viewport = scrollViewportRef.current;
+    if (!viewport) return;
+    const handleScroll = () => setScrollLeft(viewport.scrollLeft);
+    handleScroll();
+    viewport.addEventListener("scroll", handleScroll, { passive: true });
+    return () => viewport.removeEventListener("scroll", handleScroll);
+  }, [subtitles.length]);
+
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const dragTarget = parseDragId(String(event.active.id));
     if (!dragTarget) return;
@@ -417,7 +438,7 @@ export function Timeline() {
   }, [currentTime, pxPerSecond, trackWidth, viewportWidth]);
 
   return (
-    <div className="bg-panel border-t overflow-hidden mb-8 mx-4">
+    <div className="bg-panel border-t overflow-hidden pb-4">
       <div className="flex items-center justify-center px-3 py-2 border-b text-sm text-muted-foreground">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -428,8 +449,8 @@ export function Timeline() {
               className={cn(
                 "rounded p-1 transition-colors",
                 canSplit
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-muted-foreground/40 cursor-not-allowed",
+                  ? "text-foreground hover:cursor-pointer"
+                  : "text-muted-foreground",
               )}
               aria-label="Split subtitle at playhead"
             >
@@ -442,8 +463,8 @@ export function Timeline() {
               className={cn(
                 "rounded p-1 transition-colors",
                 selectedGapId
-                  ? "text-muted-foreground hover:text-foreground"
-                  : "text-muted-foreground/40 cursor-not-allowed",
+                  ? "text-foreground hover:cursor-pointer"
+                  : "text-muted-foreground",
               )}
               aria-label="Merge subtitles across selected gap"
             >
@@ -453,13 +474,17 @@ export function Timeline() {
           <button
             type="button"
             onClick={handleCenterPlayhead}
-            className="relative inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
+            disabled={!canCenterPlayhead}
+            className={cn(
+              "relative inline-flex items-center justify-center rounded p-1 transition-colors",
+              canCenterPlayhead ? "text-foreground hover:cursor-pointer" : "text-muted-foreground",
+            )}
             aria-label="Center playhead"
           >
-            <Waves className="h-5 w-5" aria-hidden="true" />
+            <Columns3 className="h-5 w-5" aria-hidden="true" />
             <Search
-              className="absolute -bottom-1 -right-1 h-3.5 w-3.5"
-              strokeWidth={2.5}
+              className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5"
+              strokeWidth={3}
               aria-hidden="true"
             />
           </button>
@@ -471,11 +496,12 @@ export function Timeline() {
               max={30}
               step={1}
               onValueChange={(value) => setSecondsPerUnit(value[0])}
+              size="sm"
               className="w-28"
             />
             <Plus className="h-4 w-4" aria-hidden="true" />
             <span className="text-xs font-mono text-muted-foreground">
-              {secondsPerUnit}s/unit
+              {secondsPerUnit}s
             </span>
           </div>
         </div>
@@ -532,7 +558,7 @@ export function Timeline() {
               {/* Timeline blocks */}
                 <div ref={containerRef} className="h-32 relative">
                   <div
-                    className="absolute top-0 bottom-0 z-20 w-4 -translate-x-1/2 cursor-ew-resize group touch-none"
+                    className="absolute top-0 bottom-2.5 z-20 w-4 -translate-x-1/2 cursor-ew-resize group touch-none"
                     style={{ left: `${currentTime * pxPerSecond}px` }}
                     onPointerDown={handlePlayheadPointerDown}
                     onPointerMove={handlePlayheadPointerMove}
@@ -542,7 +568,7 @@ export function Timeline() {
                     <div
                       className="absolute top-0 left-1/2 h-0 w-0 -translate-x-1/2 border-x-[8px] border-x-transparent border-t-[10px] border-t-primary/80 transition-colors group-hover:border-t-primary"
                     />
-                    <div className="absolute top-0 bottom-0 left-1/2 w-0.5 -translate-x-1/2 bg-primary/70 transition-colors group-hover:bg-primary" />
+                    <div className="absolute -top-2 bottom-0 left-1/2 w-0.5 -translate-x-1/2 bg-primary/70 transition-colors group-hover:bg-primary" />
                   </div>
 
                   {gaps.map((gap) => {
