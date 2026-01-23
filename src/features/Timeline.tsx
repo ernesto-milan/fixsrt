@@ -422,6 +422,15 @@ export function Timeline() {
     }
   }, []);
 
+  const handleCenterPlayhead = useCallback(() => {
+    const viewport = scrollViewportRef.current;
+    if (!viewport || viewportWidth <= 0) return;
+    if (trackWidth <= viewportWidth) return;
+    const playheadX = currentTime * pxPerSecond;
+    const targetLeft = Math.max(0, Math.min(trackWidth - viewportWidth, playheadX - viewportWidth / 2));
+    viewport.scrollTo({ left: targetLeft, behavior: "smooth" });
+  }, [currentTime, pxPerSecond, trackWidth, viewportWidth]);
+
   return (
     <div className="bg-panel border-t overflow-hidden mb-8 mx-4">
       <div className="flex items-center justify-center px-3 py-2 border-b text-sm text-muted-foreground">
@@ -456,14 +465,19 @@ export function Timeline() {
               <FoldHorizontal className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
-          <span className="relative inline-flex h-5 w-5 items-center justify-center">
+          <button
+            type="button"
+            onClick={handleCenterPlayhead}
+            className="relative inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
+            aria-label="Center playhead"
+          >
             <Waves className="h-5 w-5" aria-hidden="true" />
             <Search
               className="absolute -bottom-1 -right-1 h-3.5 w-3.5"
               strokeWidth={2.5}
               aria-hidden="true"
             />
-          </span>
+          </button>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Minus className="h-4 w-4" aria-hidden="true" />
             <Slider

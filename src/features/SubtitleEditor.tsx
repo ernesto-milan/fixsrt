@@ -64,18 +64,8 @@ export function SubtitleEditor() {
     }
   };
 
-  if (!selectedSubtitle) {
-    return (
-      <div className="p-4 border-t bg-panel">
-        <p className="text-sm text-muted-foreground text-center">
-          Select a subtitle to edit
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-4 border-t bg-panel space-y-4">
+  const editorFields = (
+    <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <Label htmlFor="start-time" className="text-xs">Start Time</Label>
@@ -111,6 +101,27 @@ export function SubtitleEditor() {
           placeholder="Subtitle text..."
         />
       </div>
+    </div>
+  );
+
+  if (!selectedSubtitle) {
+    return (
+      <div className="p-4 border-t bg-panel relative">
+        <div className="opacity-0 pointer-events-none">
+          {editorFields}
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center px-4">
+          <p className="text-sm text-muted-foreground text-center">
+            Select a subtitle to edit
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 border-t bg-panel">
+      {editorFields}
     </div>
   );
 }

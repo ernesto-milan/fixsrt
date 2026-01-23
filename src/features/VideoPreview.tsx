@@ -103,13 +103,13 @@ export function VideoPreview() {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 min-h-0 flex flex-col">
       {/* Video container */}
-      <div className="relative flex-1 bg-black rounded-lg overflow-hidden">
+      <div className="relative flex-1 min-h-0 bg-black rounded-lg overflow-hidden flex items-center justify-center">
         <video
           ref={videoRef}
           src={videoFile.url}
-          className="w-full h-full object-contain"
+          className="block max-h-full max-w-full object-contain"
           onTimeUpdate={handleTimeUpdate}
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={() => setIsPlaying(false)}
@@ -126,7 +126,7 @@ export function VideoPreview() {
       </div>
 
       {/* Controls */}
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 space-y-2 shrink-0">
         {/* Timeline slider */}
         <Slider
           value={[currentTime]}

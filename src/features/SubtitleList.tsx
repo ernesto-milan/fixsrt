@@ -51,7 +51,7 @@ export function SubtitleList() {
                   </span>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm line-clamp-2">{subtitle.text}</p>
+                  <p className="text-sm whitespace-pre-wrap">{subtitle.text}</p>
                   <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
                     {preferences.showStartTime && (
                       <span className="font-mono">{formatTimeDisplay(subtitle.startTime)}</span>
