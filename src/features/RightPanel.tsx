@@ -30,11 +30,11 @@ export function RightPanel() {
           <VideoPreview />
         </TabsContent>
 
-        <TabsContent value="text-rules" className="flex-1 min-h-0 overflow-auto p-4 mt-0">
+        <TabsContent value="text-rules" className="flex flex-1 min-h-0 overflow-hidden p-4 mt-0">
           <TextRulesPanel />
         </TabsContent>
 
-        <TabsContent value="time-rules" className="flex-1 min-h-0 overflow-auto p-4 mt-0">
+        <TabsContent value="time-rules" className="flex flex-1 min-h-0 overflow-hidden p-4 mt-0">
           <TimeRulesPanel />
         </TabsContent>
       </Tabs>

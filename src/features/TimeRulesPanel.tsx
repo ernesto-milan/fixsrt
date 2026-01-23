@@ -17,8 +17,8 @@ export function TimeRulesPanel() {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex-1 space-y-6 p-1">
+    <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 min-h-0 overflow-auto space-y-6 p-1">
         {/* Minimum duration */}
         <div className="space-y-2">
           <Label htmlFor="min-duration">Minimum duration (seconds)</Label>
