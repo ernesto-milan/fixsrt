@@ -5,6 +5,11 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import type { PreferencesState, RightPanelTab, VideoFile } from "@/shared/types/subtitle";
 import { defaultPreferences } from "@/shared/types/subtitle";
 
+type PersistedPreferences = Pick<PreferencesState, "theme" | "language" | "timelineMaxScale">;
+type PersistedUiState = {
+  preferences: PersistedPreferences;
+};
+
 type UiState = {
   selectedSubtitleId: string | null;
   selectedGapId: string | null;
@@ -29,7 +34,9 @@ type UiState = {
 };
 
 const storage =
-  typeof window === "undefined" ? undefined : createJSONStorage<UiState>(() => window.localStorage);
+  typeof window === "undefined"
+    ? undefined
+    : createJSONStorage<PersistedUiState>(() => window.localStorage);
 
 export const useUiStore = create<UiState>()(
   devtools(

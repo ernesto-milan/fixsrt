@@ -6,7 +6,7 @@ import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import { cn } from "@/shared/lib/utils";
 
 type ScrollAreaProps = React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root> & {
-  viewportRef?: React.RefObject<React.ElementRef<typeof ScrollAreaPrimitive.Viewport>>;
+  viewportRef?: React.RefObject<React.ElementRef<typeof ScrollAreaPrimitive.Viewport> | null>;
   scrollbarX?: boolean;
   scrollbarY?: boolean;
 };

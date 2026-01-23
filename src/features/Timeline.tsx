@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState, useEffect, useMemo } from "react";
+import { useRef, useCallback, useState, useEffect, useMemo, type ElementRef } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -20,6 +20,7 @@ import { useUiStore } from "@/shared/store/uiStore";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Slider } from "@/shared/ui/slider";
 import type { SubtitleBlock } from "@/shared/types/subtitle";
+import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 
 type DragMode = "move" | "start" | "end";
 
@@ -196,7 +197,7 @@ export function Timeline() {
   const timelineMaxScale = Math.max(1, preferences.timelineMaxScale ?? 30);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<ElementRef<typeof ScrollAreaPrimitive.Viewport>>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [secondsPerUnit, setSecondsPerUnit] = useState(10);

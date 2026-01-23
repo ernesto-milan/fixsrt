@@ -313,16 +313,16 @@ export function applyTextRule(
   if (subtitles.length === 0) return subtitles;
 
   switch (rule) {
-    case "cpl":
-      if (!options.maxCpl) return subtitles;
-      return applySplitRule(
-        subtitles,
-        (text) => splitByMaxCpl(text, options.maxCpl, options.dontCutWords),
-        "cpl",
-      );
-    case "wpl":
-      if (!options.maxWpl) return subtitles;
-      return applySplitRule(subtitles, (text) => splitByMaxWpl(text, options.maxWpl), "wpl");
+    case "cpl": {
+      const maxCpl = options.maxCpl;
+      if (maxCpl == null) return subtitles;
+      return applySplitRule(subtitles, (text) => splitByMaxCpl(text, maxCpl, options.dontCutWords), "cpl");
+    }
+    case "wpl": {
+      const maxWpl = options.maxWpl;
+      if (maxWpl == null) return subtitles;
+      return applySplitRule(subtitles, (text) => splitByMaxWpl(text, maxWpl), "wpl");
+    }
     case "split-symbol":
       if (!options.splitSymbol) return subtitles;
       return applySplitRule(
