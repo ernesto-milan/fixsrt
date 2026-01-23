@@ -65,6 +65,7 @@ export const useUiStore = create<UiState>()(
           preferences: {
             theme: state.preferences.theme,
             language: state.preferences.language,
+            timelineMaxScale: state.preferences.timelineMaxScale,
           },
         }),
         merge: (persisted, current) => {

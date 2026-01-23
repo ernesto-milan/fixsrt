@@ -28,19 +28,19 @@ function MainContent() {
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {preferences.swapPanels ? (
           <>
-            <div className="w-1/2 border-r">
+            <div className="flex-1 min-w-0 border-r">
               <RightPanel />
             </div>
-            <div className="w-1/2">
+            <div className="flex-[0_0_35%] min-w-[260px] max-w-[40%]">
               <LeftPanel />
             </div>
           </>
         ) : (
           <>
-            <div className="w-[400px] min-w-[300px] max-w-[500px]">
+            <div className="flex-[0_0_35%] min-w-[260px] max-w-[40%]">
               <LeftPanel />
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <RightPanel />
             </div>
           </>

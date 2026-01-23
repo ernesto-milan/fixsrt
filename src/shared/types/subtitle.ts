@@ -29,6 +29,7 @@ export interface PreferencesState {
   showDuration: boolean;
   showTimelineNumber: boolean;
   showTimelineText: boolean;
+  timelineMaxScale: number;
 }
 
 export const defaultPreferences: PreferencesState = {
@@ -41,4 +42,5 @@ export const defaultPreferences: PreferencesState = {
   showDuration: true,
   showTimelineNumber: true,
   showTimelineText: false,
+  timelineMaxScale: 30,
 };

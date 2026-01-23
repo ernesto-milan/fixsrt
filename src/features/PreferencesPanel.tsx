@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
@@ -151,7 +152,6 @@ export function PreferencesPanel() {
             <Label className="text-muted-foreground text-xs uppercase tracking-wide">
               Timeline Display
             </Label>
-
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label htmlFor="show-timeline-number" className="font-normal">
@@ -172,6 +172,26 @@ export function PreferencesPanel() {
                   id="show-timeline-text"
                   checked={preferences.showTimelineText}
                   onCheckedChange={(checked) => updatePreferences({ showTimelineText: checked })}
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <Label htmlFor="timeline-max-scale" className="font-normal">
+                    Timeline max scale
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground">Seconds per unit cap</p>
+                </div>
+                <Input
+                  id="timeline-max-scale"
+                  type="number"
+                  min={1}
+                  value={preferences.timelineMaxScale}
+                  onChange={(event) => {
+                    const next = Math.max(1, Number(event.target.value) || 1);
+                    updatePreferences({ timelineMaxScale: next });
+                  }}
+                  className="w-20 text-sm"
                 />
               </div>
             </div>

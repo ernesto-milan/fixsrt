@@ -70,78 +70,89 @@ export function SubtitleEditor() {
     }
   };
 
-  const editorFields = (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1.5">
-          <Label htmlFor="start-time" className="text-xs">Start Time</Label>
-          <Input
-            id="start-time"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            onBlur={handleStartTimeBlur}
-            className="font-mono text-sm h-9"
-            placeholder="0:00.00"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="end-time" className="text-xs">End Time</Label>
-          <Input
-            id="end-time"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            onBlur={handleEndTimeBlur}
-            className="font-mono text-sm h-9"
-            placeholder="0:00.00"
-          />
-        </div>
-      </div>
-      
-      <div className="space-y-1.5">
-        <Label htmlFor="subtitle-text" className="text-xs">Text</Label>
-        <Textarea
-          id="subtitle-text"
-          value={text}
-          onChange={(e) => handleTextChange(e.target.value)}
-          className="min-h-[80px] text-sm resize-none"
-          placeholder="Subtitle text..."
+  const timeFields = (
+    <div className="flex flex-col gap-1 w-[150px]">
+      <div className="flex items-center gap-2">
+        <Label htmlFor="start-time" className="text-xs w-12 text-right">
+          Start
+        </Label>
+        <Input
+          id="start-time"
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+          onBlur={handleStartTimeBlur}
+          className="font-mono text-sm h-7 min-w-[110px]"
+          placeholder="0:00.00"
         />
       </div>
+      <div className="flex items-center gap-2">
+        <Label htmlFor="end-time" className="text-xs w-12 text-right">
+          End
+        </Label>
+        <Input
+          id="end-time"
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
+          onBlur={handleEndTimeBlur}
+          className="font-mono text-sm h-7 min-w-[110px]"
+          placeholder="0:00.00"
+        />
+      </div>
+    </div>
+  );
+
+  const editorFields = (
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0">{timeFields}</div>
+      <Textarea
+        id="subtitle-text"
+        value={text}
+        onChange={(e) => handleTextChange(e.target.value)}
+        className="min-h-[60px] text-sm resize-none flex-1 min-w-0"
+        placeholder="Subtitle text..."
+      />
     </div>
   );
 
   if (!selectedSubtitle && selectedGap) {
     const gapDuration = Math.max(0, selectedGap.end - selectedGap.start);
     return (
-      <div className="p-4 border-t bg-panel">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="gap-start" className="text-xs">Gap Start</Label>
-              <Input
-                id="gap-start"
-                value={formatTimeDisplay(selectedGap.start)}
-                className="font-mono text-sm h-9"
-                disabled
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="gap-end" className="text-xs">Gap End</Label>
-              <Input
-                id="gap-end"
-                value={formatTimeDisplay(selectedGap.end)}
-                className="font-mono text-sm h-9"
-                disabled
-              />
+      <div className="px-2 py-2 border-t bg-panel">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0">
+            <div className="flex flex-col gap-1 w-[150px]">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="gap-start" className="text-xs w-12 text-right">
+                  Start
+                </Label>
+                <Input
+                  id="gap-start"
+                  value={formatTimeDisplay(selectedGap.start)}
+                  className="font-mono text-sm h-7 min-w-[110px]"
+                  disabled
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="gap-end" className="text-xs w-12 text-right">
+                  End
+                </Label>
+                <Input
+                  id="gap-end"
+                  value={formatTimeDisplay(selectedGap.end)}
+                  className="font-mono text-sm h-7 min-w-[110px]"
+                  disabled
+                />
+              </div>
             </div>
           </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="gap-duration" className="text-xs">Gap Length</Label>
+          <div className="flex-1 flex items-center gap-2">
+            <Label htmlFor="gap-duration" className="text-xs w-16 text-right">
+              Length
+            </Label>
             <Input
               id="gap-duration"
               value={formatTimeDisplay(gapDuration)}
-              className="font-mono text-sm h-9"
+              className="font-mono text-sm h-7 min-w-[110px]"
               disabled
             />
           </div>
@@ -152,7 +163,7 @@ export function SubtitleEditor() {
 
   if (!selectedSubtitle) {
     return (
-      <div className="p-4 border-t bg-panel relative">
+      <div className="px-2 py-2 border-t bg-panel relative">
         <div className="opacity-0 pointer-events-none">
           {editorFields}
         </div>
@@ -166,7 +177,7 @@ export function SubtitleEditor() {
   }
 
   return (
-    <div className="p-4 border-t bg-panel">
+    <div className="px-2 py-2 border-t bg-panel">
       {editorFields}
     </div>
   );

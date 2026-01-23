@@ -193,6 +193,7 @@ export function Timeline() {
   const setCurrentTime = useUiStore((state) => state.setCurrentTime);
   const videoFile = useUiStore((state) => state.videoFile);
   const preferences = useUiStore((state) => state.preferences);
+  const timelineMaxScale = Math.max(1, preferences.timelineMaxScale ?? 30);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollViewportRef = useRef<HTMLDivElement>(null);
@@ -348,6 +349,10 @@ export function Timeline() {
   }, [subtitles.length]);
 
   useEffect(() => {
+    setSecondsPerUnit((current) => Math.min(current, timelineMaxScale));
+  }, [timelineMaxScale]);
+
+  useEffect(() => {
     const viewport = scrollViewportRef.current;
     if (!viewport) return;
     const handleScroll = () => setScrollLeft(viewport.scrollLeft);
@@ -493,7 +498,7 @@ export function Timeline() {
             <Slider
               value={[secondsPerUnit]}
               min={1}
-              max={30}
+              max={timelineMaxScale}
               step={1}
               onValueChange={(value) => setSecondsPerUnit(value[0])}
               size="sm"
