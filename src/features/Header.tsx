@@ -1,19 +1,15 @@
 "use client";
-import { Download, Upload, Settings } from "lucide-react";
+
+import Link from "next/link";
+import { Download, Upload, Settings, Info } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useUiStore } from "@/shared/store/uiStore";
 import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 
 export function Header() {
-  const setIsUploadModalOpen = useUiStore(
-    (state) => state.setIsUploadModalOpen,
-  );
-  const setIsPreferencesOpen = useUiStore(
-    (state) => state.setIsPreferencesOpen,
-  );
-  const setIsExportModalOpen = useUiStore(
-    (state) => state.setIsExportModalOpen,
-  );
+  const setIsUploadModalOpen = useUiStore((state) => state.setIsUploadModalOpen);
+  const setIsPreferencesOpen = useUiStore((state) => state.setIsPreferencesOpen);
+  const setIsExportModalOpen = useUiStore((state) => state.setIsExportModalOpen);
   const subtitleFileName = useSubtitlesStore((state) => state.subtitleFileName);
   const subtitlesCount = useSubtitlesStore((state) => state.subtitles.length);
   const logoSrc = "/logo_full.png";
@@ -46,6 +42,16 @@ export function Header() {
         </Button>
       </div>
       <div className="flex items-center gap-2">
+        <Button
+          asChild
+          variant="ghost"
+          size="icon"
+          className="text-muted-foreground hover:text-foreground !h-8 !w-8 p-0 [&_svg]:h-6 [&_svg]:w-6"
+        >
+          <Link href="/info" className="flex h-full w-full items-center justify-center">
+            <Info />
+          </Link>
+        </Button>
         <Button
           variant="ghost"
           size="icon"

@@ -15,22 +15,25 @@ interface DropZoneProps {
   required?: boolean;
   fileName: string | null;
   onFileSelect: (file: File) => void;
+  disabled?: boolean;
 }
 
-function DropZone({ label, accept, icon, required, fileName, onFileSelect }: DropZoneProps) {
+function DropZone({ label, accept, icon, required, fileName, onFileSelect, disabled }: DropZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
+    if (disabled) return;
     e.preventDefault();
     setIsDragOver(false);
     const file = e.dataTransfer.files[0];
     if (file) onFileSelect(file);
-  }, [onFileSelect]);
+  }, [disabled, onFileSelect]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (disabled) return;
     const file = e.target.files?.[0];
     if (file) onFileSelect(file);
-  }, [onFileSelect]);
+  }, [disabled, onFileSelect]);
 
   return (
     <label
@@ -38,15 +41,17 @@ function DropZone({ label, accept, icon, required, fileName, onFileSelect }: Dro
         "flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors",
         isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
         fileName && "border-primary/30 bg-highlight",
+        disabled && "cursor-not-allowed opacity-60",
       )}
       onDragOver={(e) => {
+        if (disabled) return;
         e.preventDefault();
         setIsDragOver(true);
       }}
       onDragLeave={() => setIsDragOver(false)}
-      onDrop={handleDrop}
-    >
-      <input type="file" accept={accept} className="hidden" onChange={handleChange} />
+    onDrop={handleDrop}
+  >
+      <input type="file" accept={accept} className="hidden" onChange={handleChange} disabled={disabled} />
       
       {fileName ? (
         <>
@@ -92,11 +97,13 @@ export function UploadModal() {
   const handleSrtSelect = useCallback(async (file: File) => {
     const content = await file.text();
     setPendingSrtFile({ name: file.name, content });
+    setPendingVideoFile(null);
   }, []);
 
   const handleVideoSelect = useCallback((file: File) => {
     const url = URL.createObjectURL(file);
     setPendingVideoFile({ name: file.name, url });
+    setPendingSrtFile(null);
   }, []);
 
   const handleConfirm = useCallback(() => {
@@ -144,6 +151,7 @@ export function UploadModal() {
             required
             fileName={pendingSrtFile?.name || null}
             onFileSelect={handleSrtSelect}
+            disabled={Boolean(pendingVideoFile)}
           />
           
           <DropZone
@@ -152,6 +160,7 @@ export function UploadModal() {
             icon={<Film className="h-6 w-6 text-muted-foreground" />}
             fileName={pendingVideoFile?.name || videoFile?.name || null}
             onFileSelect={handleVideoSelect}
+            disabled={Boolean(pendingSrtFile)}
           />
         </div>
 
@@ -159,7 +168,7 @@ export function UploadModal() {
           <Button variant="outline" onClick={handleClose}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm} disabled={!pendingSrtFile}>
+          <Button onClick={handleConfirm} disabled={!pendingSrtFile && !pendingVideoFile}>
             <Upload className="h-4 w-4 mr-2" />
             Load Files
           </Button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
 import { TooltipProvider } from "@/shared/ui/tooltip";
 import { Toaster } from "@/shared/ui/toaster";
 import { Toaster as Sonner } from "@/shared/ui/sonner";
@@ -58,6 +59,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
         <ThemeSync />
         <PersistGate />
         {children}
+        <Analytics />
       </TooltipProvider>
     </QueryClientProvider>
   );

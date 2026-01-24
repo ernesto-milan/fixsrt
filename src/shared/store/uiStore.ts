@@ -5,9 +5,8 @@ import { createJSONStorage, devtools, persist } from "zustand/middleware";
 import type { PreferencesState, RightPanelTab, VideoFile } from "@/shared/types/subtitle";
 import { defaultPreferences } from "@/shared/types/subtitle";
 
-type PersistedPreferences = Pick<PreferencesState, "theme" | "language" | "timelineMaxScale">;
 type PersistedUiState = {
-  preferences: PersistedPreferences;
+  preferences: PreferencesState;
 };
 
 type UiState = {
@@ -69,11 +68,7 @@ export const useUiStore = create<UiState>()(
         storage,
         version: 1,
         partialize: (state) => ({
-          preferences: {
-            theme: state.preferences.theme,
-            language: state.preferences.language,
-            timelineMaxScale: state.preferences.timelineMaxScale,
-          },
+          preferences: state.preferences,
         }),
         merge: (persisted, current) => {
           const persistedState = persisted as Partial<UiState>;

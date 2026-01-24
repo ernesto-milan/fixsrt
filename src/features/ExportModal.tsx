@@ -96,7 +96,7 @@ export function ExportModal() {
               <p className="text-sm text-muted-foreground">
                 If FixSRT saved you time, consider{" "}
                 <a
-                  href="https://buymeacoffee.com"
+                  href="https://buymeacoffee.com/emilan"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
