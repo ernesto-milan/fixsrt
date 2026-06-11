@@ -5,19 +5,8 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { Switch } from "@/shared/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
 import { useUiStore } from "@/shared/store/uiStore";
-
-const languages = [
-  { code: "en", name: "English" },
-  { code: "es", name: "Español" },
-  { code: "fr", name: "Français" },
-  { code: "de", name: "Deutsch" },
-  { code: "pt", name: "Português" },
-  { code: "ja", name: "日本語" },
-  { code: "zh", name: "中文" },
-];
 
 export function PreferencesPanel() {
   const isPreferencesOpen = useUiStore((state) => state.isPreferencesOpen);
@@ -55,55 +44,21 @@ export function PreferencesPanel() {
         </div>
 
         <div className="flex-1 space-y-5 overflow-y-auto p-3">
-          <Label className="text-2xs font-semibold uppercase tracking-caps text-faint">
-            Appearance
-          </Label>
-          {/* Theme */}
-          <div className="space-y-1.5">
-            <Label>Theme</Label>
-            <Select 
-              value={preferences.theme} 
-              onValueChange={(value: 'light' | 'dark' | 'system') => updatePreferences({ theme: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-                <SelectItem value="system">System</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Language */}
-          <div className="space-y-2">
-            <Label>Language</Label>
-            <Select 
-              value={preferences.language} 
-              onValueChange={(value) => updatePreferences({ language: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {languages.map(lang => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    {lang.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Layout */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="swap-panels">Swap left/right panels</Label>
-            <Switch
-              id="swap-panels"
-              checked={preferences.swapPanels}
-              onCheckedChange={(checked) => updatePreferences({ swapPanels: checked })}
-            />
+          <div className="space-y-3">
+            <Label className="text-2xs font-semibold uppercase tracking-caps text-faint">
+              Layout
+            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="swap-panels" className="font-normal">
+                Swap left/right panels
+              </Label>
+              <Switch
+                id="swap-panels"
+                checked={preferences.swapPanels}
+                onCheckedChange={(checked) => updatePreferences({ swapPanels: checked })}
+              />
+            </div>
           </div>
 
           {/* Subtitle List Options */}

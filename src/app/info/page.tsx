@@ -52,6 +52,18 @@ export default function InfoPage() {
               </Link>
             </p>
             <p>
+              FixSRT is open source — the code lives on{" "}
+              <Link
+                href="https://github.com/ernesto-milan/fixsrt"
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary hover:underline"
+              >
+                GitHub
+              </Link>
+              , in case anyone cares to peek, fork, or open an issue.
+            </p>
+            <p>
               If this tool saved you time and you’d like to support its development, you can{" "}
               <Link
                 href="https://buymeacoffee.com/emilan"
