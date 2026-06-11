@@ -31,7 +31,6 @@ export function Header() {
   const updatePreferences = useUiStore((state) => state.updatePreferences);
   const subtitleFileName = useSubtitlesStore((state) => state.subtitleFileName);
   const subtitlesCount = useSubtitlesStore((state) => state.subtitles.length);
-  const logoSrc = "/logo_full.png";
 
   // Resolve the actually-applied theme (handles "system") for the toggle icon.
   const systemPrefersDark = useSystemPrefersDark();
@@ -41,16 +40,18 @@ export function Header() {
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-panel px-3 sm:gap-4">
-      <div className="flex shrink-0 items-center">
+      <div className="flex shrink-0 items-center gap-2">
         <Image
-          src={logoSrc}
-          alt="FixSRT"
-          width={888}
-          height={385}
+          src="/icon.png"
+          alt=""
+          width={512}
+          height={512}
           priority
-          className="block h-7 w-auto"
+          className="block h-7 w-7"
         />
-        <span className="sr-only">FixSRT</span>
+        <span className="bg-gradient-to-br from-[#7C3AED] to-[#C026D3] bg-clip-text text-[22px] font-bold leading-none tracking-tight text-transparent">
+          FixSRT
+        </span>
       </div>
       <div className="flex flex-1 items-center justify-center gap-2">
         <Button

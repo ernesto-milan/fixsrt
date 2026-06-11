@@ -9,16 +9,18 @@ export default function InfoPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="flex h-12 items-center justify-between border-b bg-panel px-3">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <Image
-            src="/logo_full.png"
-            alt="FixSRT"
-            width={888}
-            height={385}
+            src="/icon.png"
+            alt=""
+            width={512}
+            height={512}
             priority
-            className="block h-7 w-auto"
+            className="block h-7 w-7"
           />
-          <span className="sr-only">FixSRT</span>
+          <span className="bg-gradient-to-br from-[#7C3AED] to-[#C026D3] bg-clip-text text-[22px] font-bold leading-none tracking-tight text-transparent">
+            FixSRT
+          </span>
         </div>
         <Button asChild variant="ghost" size="icon" aria-label="Back to editor">
           <Link href="/">
