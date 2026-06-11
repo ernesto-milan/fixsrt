@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   description: "Subtitle editing and transformation tool",
   icons: {
     icon: "/fav.png",
+    apple: "/apple-icon.png",
   },
 };
 
