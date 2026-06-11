@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 
@@ -9,7 +10,14 @@ export default function InfoPage() {
     <div className="min-h-screen bg-background">
       <header className="flex h-12 items-center justify-between border-b bg-panel px-3">
         <div className="flex items-center">
-          <img src="/logo_full.png" alt="FixSRT" className="h-7 w-auto block" />
+          <Image
+            src="/logo_full.png"
+            alt="FixSRT"
+            width={888}
+            height={385}
+            priority
+            className="block h-7 w-auto"
+          />
           <span className="sr-only">FixSRT</span>
         </div>
         <Button asChild variant="ghost" size="icon" aria-label="Back to editor">

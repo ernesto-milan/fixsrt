@@ -227,7 +227,7 @@ const applyMinimumSpeedRule = (
 
   for (let i = 0; i < subtitles.length; i += 1) {
     let current = { ...subtitles[i] };
-    let currentStartMs = toMs(current.startTime);
+    const currentStartMs = toMs(current.startTime);
     let currentEndMs = toMs(current.endTime);
     let currentDurationMs = Math.max(0, currentEndMs - currentStartMs);
     let currentCount = countFn(current.text);

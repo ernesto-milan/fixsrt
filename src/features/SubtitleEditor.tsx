@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { Label } from "@/shared/ui/label";
@@ -21,21 +21,23 @@ export function SubtitleEditor() {
     return getSubtitleGaps(subtitles).find((gap) => gap.id === selectedGapId) ?? null;
   }, [selectedGapId, subtitles]);
 
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [text, setText] = useState("");
+  const [startTime, setStartTime] = useState(() =>
+    selectedSubtitle ? formatTimeDisplay(selectedSubtitle.startTime) : "",
+  );
+  const [endTime, setEndTime] = useState(() =>
+    selectedSubtitle ? formatTimeDisplay(selectedSubtitle.endTime) : "",
+  );
+  const [text, setText] = useState(() => selectedSubtitle?.text ?? "");
 
-  useEffect(() => {
-    if (selectedSubtitle) {
-      setStartTime(formatTimeDisplay(selectedSubtitle.startTime));
-      setEndTime(formatTimeDisplay(selectedSubtitle.endTime));
-      setText(selectedSubtitle.text);
-    } else {
-      setStartTime("");
-      setEndTime("");
-      setText("");
-    }
-  }, [selectedSubtitle]);
+  // Re-sync the form fields whenever the selected subtitle changes (including
+  // when its times are updated elsewhere, e.g. by dragging on the timeline).
+  const [prevSelected, setPrevSelected] = useState(selectedSubtitle);
+  if (selectedSubtitle !== prevSelected) {
+    setPrevSelected(selectedSubtitle);
+    setStartTime(selectedSubtitle ? formatTimeDisplay(selectedSubtitle.startTime) : "");
+    setEndTime(selectedSubtitle ? formatTimeDisplay(selectedSubtitle.endTime) : "");
+    setText(selectedSubtitle?.text ?? "");
+  }
 
   const handleTextChange = (value: string) => {
     setText(value);

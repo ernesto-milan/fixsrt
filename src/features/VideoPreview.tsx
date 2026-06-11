@@ -18,10 +18,18 @@ export function VideoPreview() {
   const subtitles = useSubtitlesStore((state) => state.subtitles);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(videoFile?.duration ?? 0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [dimensions, setDimensions] = useState<{ w: number; h: number } | null>(null);
+
+  // Reset the duration to the stored value whenever a different video is
+  // loaded; live metadata then refines it via handleLoadedMetadata.
+  const [prevVideoFile, setPrevVideoFile] = useState(videoFile);
+  if (videoFile !== prevVideoFile) {
+    setPrevVideoFile(videoFile);
+    setDuration(videoFile?.duration ?? 0);
+  }
 
   // Dark, cool "video stage" backdrop — a subtle violet top-glow over a
   // diagonal hatch. Used behind the preview in both themes.
@@ -29,10 +37,6 @@ export function VideoPreview() {
     background:
       "radial-gradient(120% 80% at 50% 0%, hsl(274 38% 16%) 0%, transparent 55%), repeating-linear-gradient(135deg, hsl(230 14% 7%) 0 26px, hsl(230 14% 9%) 26px 52px)",
   };
-
-  useEffect(() => {
-    setDuration(videoFile?.duration ?? 0);
-  }, [videoFile]);
 
   // Get current subtitle
   const currentSubtitle = subtitles.find(
