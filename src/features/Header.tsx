@@ -49,7 +49,7 @@ export function Header() {
           priority
           className="block h-7 w-7"
         />
-        <span className="bg-gradient-to-br from-[#7C3AED] to-[#C026D3] bg-clip-text text-[22px] font-bold leading-none tracking-tight text-transparent">
+        <span className="hidden bg-gradient-to-br from-[#7C3AED] to-[#C026D3] bg-clip-text text-[22px] font-bold leading-none tracking-tight text-transparent sm:inline">
           FixSRT
         </span>
       </div>
