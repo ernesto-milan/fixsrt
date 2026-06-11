@@ -120,32 +120,44 @@ function TimelineBlock({
   showText,
   onSelect,
 }: TimelineBlockProps) {
-  const move = useDraggable({ id: `move::${subtitle.id}` });
-  const start = useDraggable({ id: `start::${subtitle.id}` });
-  const end = useDraggable({ id: `end::${subtitle.id}` });
+  const {
+    setNodeRef: setMoveRef,
+    attributes: moveAttributes,
+    listeners: moveListeners,
+  } = useDraggable({ id: `move::${subtitle.id}` });
+  const {
+    setNodeRef: setStartRef,
+    attributes: startAttributes,
+    listeners: startListeners,
+  } = useDraggable({ id: `start::${subtitle.id}` });
+  const {
+    setNodeRef: setEndRef,
+    attributes: endAttributes,
+    listeners: endListeners,
+  } = useDraggable({ id: `end::${subtitle.id}` });
 
   const handleMovePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement | null;
     if (target?.closest('[data-drag-handle="true"]')) return;
     onSelect(subtitle.id);
-    move.listeners?.onPointerDown?.(event);
+    moveListeners?.onPointerDown?.(event);
   };
 
   const handleStartPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     event.stopPropagation();
     onSelect(subtitle.id);
-    start.listeners?.onPointerDown?.(event);
+    startListeners?.onPointerDown?.(event);
   };
 
   const handleEndPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     event.stopPropagation();
     onSelect(subtitle.id);
-    end.listeners?.onPointerDown?.(event);
+    endListeners?.onPointerDown?.(event);
   };
 
   return (
     <div
-      ref={move.setNodeRef}
+      ref={setMoveRef}
       className={cn(
         "absolute top-3 h-24 cursor-pointer rounded-sm transition-colors",
         isSelected
@@ -153,24 +165,24 @@ function TimelineBlock({
           : "bg-timeline-block/80 hover:bg-timeline-block",
       )}
       style={{ left: `${left}px`, width: `${Math.max(width, 4)}px` }}
-      {...move.attributes}
-      {...move.listeners}
+      {...moveAttributes}
+      {...moveListeners}
       onPointerDown={handleMovePointerDown}
     >
       <div
-        ref={start.setNodeRef}
+        ref={setStartRef}
         data-drag-handle="true"
         className="absolute left-0 top-0 bottom-0 w-2 cursor-ew-resize"
-        {...start.attributes}
-        {...start.listeners}
+        {...startAttributes}
+        {...startListeners}
         onPointerDown={handleStartPointerDown}
       />
       <div
-        ref={end.setNodeRef}
+        ref={setEndRef}
         data-drag-handle="true"
         className="absolute right-0 top-0 bottom-0 w-2 cursor-ew-resize"
-        {...end.attributes}
-        {...end.listeners}
+        {...endAttributes}
+        {...endListeners}
         onPointerDown={handleEndPointerDown}
       />
 
@@ -201,6 +213,12 @@ export function Timeline() {
   const [viewportWidth, setViewportWidth] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [secondsPerUnit, setSecondsPerUnit] = useState(10);
+  // Clamp the zoom when the max-scale preference drops below the current value.
+  const [prevMaxScale, setPrevMaxScale] = useState(timelineMaxScale);
+  if (timelineMaxScale !== prevMaxScale) {
+    setPrevMaxScale(timelineMaxScale);
+    setSecondsPerUnit((current) => Math.min(current, timelineMaxScale));
+  }
   const dragStateRef = useRef<DragState | null>(null);
   const [dragPreview, setDragPreview] = useState<{
     subtitleId: string;
@@ -348,10 +366,6 @@ export function Timeline() {
     observer.observe(viewport);
     return () => observer.disconnect();
   }, [subtitles.length]);
-
-  useEffect(() => {
-    setSecondsPerUnit((current) => Math.min(current, timelineMaxScale));
-  }, [timelineMaxScale]);
 
   useEffect(() => {
     const viewport = scrollViewportRef.current;
@@ -607,9 +621,20 @@ export function Timeline() {
 
                 {/* Subtitle blocks */}
                 {subtitles.map((subtitle) => {
+                  // The dragged subtitle keeps its pre-drag times in the store
+                  // until drag end, so derive the live preview from those plus
+                  // the in-flight delta rather than reading the drag ref here.
                   const preview =
-                    dragPreview && dragStateRef.current?.subtitleId === subtitle.id
-                      ? computeDragTimes(dragStateRef.current, dragPreview.deltaSeconds)
+                    dragPreview && dragPreview.subtitleId === subtitle.id
+                      ? computeDragTimes(
+                          {
+                            mode: dragPreview.mode,
+                            subtitleId: subtitle.id,
+                            startTime: subtitle.startTime,
+                            endTime: subtitle.endTime,
+                          },
+                          dragPreview.deltaSeconds,
+                        )
                       : null;
                   const startTime = preview?.startTime ?? subtitle.startTime;
                   const endTime = preview?.endTime ?? subtitle.endTime;

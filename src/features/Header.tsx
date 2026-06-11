@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Download, Upload, Settings, Info, Sun, Moon } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useUiStore } from "@/shared/store/uiStore";
@@ -41,7 +42,14 @@ export function Header() {
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-panel px-3 sm:gap-4">
       <div className="flex shrink-0 items-center">
-        <img src={logoSrc} alt="FixSRT" className="h-7 w-auto block" />
+        <Image
+          src={logoSrc}
+          alt="FixSRT"
+          width={888}
+          height={385}
+          priority
+          className="block h-7 w-auto"
+        />
         <span className="sr-only">FixSRT</span>
       </div>
       <div className="flex flex-1 items-center justify-center gap-2">
