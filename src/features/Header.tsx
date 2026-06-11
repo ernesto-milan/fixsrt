@@ -39,8 +39,8 @@ export function Header() {
   const toggleTheme = () => updatePreferences({ theme: isDark ? "light" : "dark" });
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-4 border-b bg-panel px-3">
-      <div className="flex items-center">
+    <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-panel px-3 sm:gap-4">
+      <div className="flex shrink-0 items-center">
         <img src={logoSrc} alt="FixSRT" className="h-7 w-auto block" />
         <span className="sr-only">FixSRT</span>
       </div>
@@ -52,7 +52,7 @@ export function Header() {
           disabled={subtitlesCount === 0}
         >
           <Download />
-          Export SRT
+          <span className="hidden sm:inline">Export SRT</span>
         </Button>
         <Button
           variant="secondary"
@@ -60,10 +60,12 @@ export function Header() {
           onClick={() => setIsUploadModalOpen(true)}
         >
           <Upload />
-          {subtitleFileName ? "Replace files" : "Upload"}
+          <span className="hidden sm:inline">
+            {subtitleFileName ? "Replace files" : "Upload"}
+          </span>
         </Button>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1">
         <span className="mr-1 hidden max-w-[180px] truncate font-mono text-2xs text-faint sm:block">
           {subtitleFileName || "no file"}
         </span>
