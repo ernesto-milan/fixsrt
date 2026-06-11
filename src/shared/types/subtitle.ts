@@ -21,7 +21,6 @@ export type RightPanelTab = "preview" | "text-rules" | "time-rules";
 
 export interface PreferencesState {
   theme: "light" | "dark" | "system";
-  language: string;
   swapPanels: boolean;
   showIndex: boolean;
   showStartTime: boolean;
@@ -34,7 +33,6 @@ export interface PreferencesState {
 
 export const defaultPreferences: PreferencesState = {
   theme: "system",
-  language: "en",
   swapPanels: false,
   showIndex: true,
   showStartTime: true,
