@@ -117,7 +117,7 @@ export function SubtitleEditor() {
   if (!selectedSubtitle && selectedGap) {
     const gapDuration = Math.max(0, selectedGap.end - selectedGap.start);
     return (
-      <div className="px-2 py-2 border-t bg-panel">
+      <div className="border-t bg-card px-2.5 py-2.5">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
             <div className="flex flex-col gap-1 w-[150px]">
@@ -163,7 +163,7 @@ export function SubtitleEditor() {
 
   if (!selectedSubtitle) {
     return (
-      <div className="px-2 py-2 border-t bg-panel relative">
+      <div className="relative border-t bg-card px-2.5 py-2.5">
         <div className="opacity-0 pointer-events-none">
           {editorFields}
         </div>
@@ -177,7 +177,7 @@ export function SubtitleEditor() {
   }
 
   return (
-    <div className="px-2 py-2 border-t bg-panel">
+    <div className="border-t bg-card px-2.5 py-2.5">
       {editorFields}
     </div>
   );
