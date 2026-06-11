@@ -147,10 +147,10 @@ function TimelineBlock({
     <div
       ref={move.setNodeRef}
       className={cn(
-        "absolute top-3 h-24 rounded cursor-pointer transition-colors",
+        "absolute top-3 h-24 cursor-pointer rounded-sm transition-colors",
         isSelected
-          ? "bg-timeline-block-active/80 ring-2 ring-primary ring-offset-1"
-          : "bg-timeline-block/60 hover:bg-timeline-block-active/70",
+          ? "bg-timeline-block-active ring-2 ring-primary ring-offset-1 ring-offset-timeline"
+          : "bg-timeline-block/80 hover:bg-timeline-block",
       )}
       style={{ left: `${left}px`, width: `${Math.max(width, 4)}px` }}
       {...move.attributes}
@@ -174,9 +174,9 @@ function TimelineBlock({
         onPointerDown={handleEndPointerDown}
       />
 
-      <div className="px-2 py-1 text-xs text-primary-foreground">
-        {showNumber && <div className="font-mono">#{subtitle.index}</div>}
-        {showText && <div className="mt-1 truncate">{subtitle.text}</div>}
+      <div className="px-1.5 py-1 text-2xs text-white">
+        {showNumber && <div className="font-mono font-medium">#{subtitle.index}</div>}
+        {showText && <div className="mt-0.5 truncate opacity-90">{subtitle.text}</div>}
       </div>
     </div>
   );
@@ -444,10 +444,10 @@ export function Timeline() {
   }, [currentTime, pxPerSecond, trackWidth, viewportWidth]);
 
   return (
-    <div className="bg-panel border-t overflow-hidden pb-4">
-      <div className="flex items-center justify-center px-3 py-2 border-b text-sm text-muted-foreground">
+    <div className="overflow-hidden border-t bg-panel pb-3">
+      <div className="flex h-9 items-center justify-center border-b px-3 text-muted-foreground">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={handleSplitAtPlayhead}
@@ -455,12 +455,12 @@ export function Timeline() {
               className={cn(
                 "rounded p-1 transition-colors",
                 canSplit
-                  ? "text-foreground hover:cursor-pointer"
-                  : "text-muted-foreground",
+                  ? "text-foreground hover:bg-surface hover:cursor-pointer"
+                  : "text-faint",
               )}
               aria-label="Split subtitle at playhead"
             >
-              <UnfoldHorizontal className="h-5 w-5" aria-hidden="true" />
+              <UnfoldHorizontal className="h-4 w-4" aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -469,12 +469,12 @@ export function Timeline() {
               className={cn(
                 "rounded p-1 transition-colors",
                 selectedGapId
-                  ? "text-foreground hover:cursor-pointer"
-                  : "text-muted-foreground",
+                  ? "text-foreground hover:bg-surface hover:cursor-pointer"
+                  : "text-faint",
               )}
               aria-label="Merge subtitles across selected gap"
             >
-              <FoldHorizontal className="h-5 w-5" aria-hidden="true" />
+              <FoldHorizontal className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
           <button
@@ -483,19 +483,21 @@ export function Timeline() {
             disabled={!canCenterPlayhead}
             className={cn(
               "relative inline-flex items-center justify-center rounded p-1 transition-colors",
-              canCenterPlayhead ? "text-foreground hover:cursor-pointer" : "text-muted-foreground",
+              canCenterPlayhead
+                ? "text-foreground hover:bg-surface hover:cursor-pointer"
+                : "text-faint",
             )}
             aria-label="Center playhead"
           >
-            <Columns3 className="h-5 w-5" aria-hidden="true" />
+            <Columns3 className="h-4 w-4" aria-hidden="true" />
             <Search
-              className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5"
+              className="absolute -bottom-0.5 -right-0.5 h-3 w-3"
               strokeWidth={3}
               aria-hidden="true"
             />
           </button>
           <div className="flex items-center gap-2 text-muted-foreground">
-            <Minus className="h-4 w-4" aria-hidden="true" />
+            <Minus className="h-3.5 w-3.5" aria-hidden="true" />
             <Slider
               value={[secondsPerUnit]}
               min={1}
@@ -505,8 +507,8 @@ export function Timeline() {
               size="sm"
               className="w-28"
             />
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            <span className="text-xs font-mono text-muted-foreground">
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="w-7 font-mono text-2xs text-muted-foreground">
               {secondsPerUnit}s
             </span>
           </div>

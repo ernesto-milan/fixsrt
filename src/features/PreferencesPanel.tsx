@@ -36,26 +36,30 @@ export function PreferencesPanel() {
       )}
       
       {/* Panel */}
-      <div 
+      <div
         className={cn(
-          "fixed top-0 right-0 h-full w-80 bg-card border-l shadow-xl z-50 transition-transform duration-300 ease-out",
+          "fixed top-0 right-0 z-50 h-full w-80 border-l bg-panel shadow-lg transition-transform duration-300 ease-out",
           isPreferencesOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="font-semibold">Preferences</h2>
-          <Button 
-            variant="ghost" 
+        <div className="flex h-12 items-center justify-between border-b px-3">
+          <h2 className="text-md font-semibold">Preferences</h2>
+          <Button
+            variant="ghost"
             size="icon"
             onClick={() => setIsPreferencesOpen(false)}
+            aria-label="Close preferences"
           >
-            <X className="h-4 w-4" />
+            <X />
           </Button>
         </div>
 
-        <div className="p-4 space-y-6">
+        <div className="space-y-5 overflow-y-auto p-3">
+          <Label className="text-2xs font-semibold uppercase tracking-caps text-faint">
+            Appearance
+          </Label>
           {/* Theme */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label>Theme</Label>
             <Select 
               value={preferences.theme} 
@@ -104,7 +108,7 @@ export function PreferencesPanel() {
 
           {/* Subtitle List Options */}
           <div className="space-y-3">
-            <Label className="text-muted-foreground text-xs uppercase tracking-wide">
+            <Label className="text-2xs font-semibold uppercase tracking-caps text-faint">
               Subtitle List Display
             </Label>
             
@@ -149,7 +153,7 @@ export function PreferencesPanel() {
 
           {/* Timeline Options */}
           <div className="space-y-3">
-            <Label className="text-muted-foreground text-xs uppercase tracking-wide">
+            <Label className="text-2xs font-semibold uppercase tracking-caps text-faint">
               Timeline Display
             </Label>
             <div className="space-y-3">

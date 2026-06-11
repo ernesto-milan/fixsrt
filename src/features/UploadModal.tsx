@@ -38,9 +38,9 @@ function DropZone({ label, accept, icon, required, fileName, onFileSelect, disab
   return (
     <label
       className={cn(
-        "flex flex-col items-center justify-center gap-3 p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors",
-        isDragOver ? "border-primary bg-primary/5" : "border-border hover:border-primary/50",
-        fileName && "border-primary/30 bg-highlight",
+        "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-5 transition-colors",
+        isDragOver ? "border-primary bg-accent/5" : "border-border hover:border-primary/40",
+        fileName && "border-primary/40 bg-accent-soft/40",
         disabled && "cursor-not-allowed opacity-60",
       )}
       onDragOver={(e) => {
@@ -55,23 +55,23 @@ function DropZone({ label, accept, icon, required, fileName, onFileSelect, disab
       
       {fileName ? (
         <>
-          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Check className="h-6 w-6 text-primary" />
+          <div className="flex size-9 items-center justify-center rounded-full bg-primary/15 text-primary">
+            <Check className="h-4 w-4" />
           </div>
           <div className="text-center">
-            <p className="font-medium text-sm">{fileName}</p>
-            <p className="text-xs text-muted-foreground mt-1">Click or drop to replace</p>
+            <p className="text-sm font-medium">{fileName}</p>
+            <p className="mt-0.5 text-2xs text-muted-foreground">Click or drop to replace</p>
           </div>
         </>
       ) : (
         <>
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
+          <div className="flex size-9 items-center justify-center rounded-full bg-surface text-muted-foreground">
             {icon}
           </div>
           <div className="text-center">
-            <p className="font-medium text-sm">{label}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {required ? "Required" : "Optional"} • Drag & drop or click to browse
+            <p className="text-sm font-medium">{label}</p>
+            <p className="mt-0.5 text-2xs text-muted-foreground">
+              {required ? "Required" : "Optional"} · drag &amp; drop or click to browse
             </p>
           </div>
         </>
@@ -140,37 +140,37 @@ export function UploadModal() {
     <Dialog open={isUploadModalOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Upload Files</DialogTitle>
+          <DialogTitle>Upload files</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
           <DropZone
-            label="Subtitle File (.srt)"
+            label="Subtitle file (.srt)"
             accept=".srt"
-            icon={<FileText className="h-6 w-6 text-muted-foreground" />}
+            icon={<FileText className="h-4 w-4" />}
             required
             fileName={pendingSrtFile?.name || null}
             onFileSelect={handleSrtSelect}
             disabled={Boolean(pendingVideoFile)}
           />
-          
+
           <DropZone
-            label="Video File"
+            label="Video file"
             accept="video/*"
-            icon={<Film className="h-6 w-6 text-muted-foreground" />}
+            icon={<Film className="h-4 w-4" />}
             fileName={pendingVideoFile?.name || videoFile?.name || null}
             onFileSelect={handleVideoSelect}
             disabled={Boolean(pendingSrtFile)}
           />
         </div>
 
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={handleClose}>
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={handleClose}>
             Cancel
           </Button>
-          <Button onClick={handleConfirm} disabled={!pendingSrtFile && !pendingVideoFile}>
-            <Upload className="h-4 w-4 mr-2" />
-            Load Files
+          <Button size="sm" onClick={handleConfirm} disabled={!pendingSrtFile && !pendingVideoFile}>
+            <Upload />
+            Load files
           </Button>
         </div>
       </DialogContent>

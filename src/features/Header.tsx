@@ -1,11 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Download, Upload, Settings, Info, Sun, Moon } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useUiStore } from "@/shared/store/uiStore";
 import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
+
+const SYSTEM_DARK_QUERY = "(prefers-color-scheme: dark)";
+
+// Subscribe to the OS color-scheme preference without setState-in-effect.
+function useSystemPrefersDark() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mql = window.matchMedia(SYSTEM_DARK_QUERY);
+      mql.addEventListener("change", onChange);
+      return () => mql.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(SYSTEM_DARK_QUERY).matches,
+    () => false,
+  );
+}
 
 export function Header() {
   const setIsUploadModalOpen = useUiStore((state) => state.setIsUploadModalOpen);
@@ -18,10 +33,8 @@ export function Header() {
   const logoSrc = "/logo_full.png";
 
   // Resolve the actually-applied theme (handles "system") for the toggle icon.
-  const [isDark, setIsDark] = useState(false);
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
-  }, [theme]);
+  const systemPrefersDark = useSystemPrefersDark();
+  const isDark = theme === "dark" || (theme === "system" && systemPrefersDark);
 
   const toggleTheme = () => updatePreferences({ theme: isDark ? "light" : "dark" });
 
