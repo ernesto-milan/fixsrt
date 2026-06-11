@@ -12,9 +12,9 @@ import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 import { applyTimeRule, type TimeRule, type TimeRuleOptions } from "@/shared/utils/timeRules";
 
 const cardBaseClass =
-  "rounded-lg border bg-card p-4 space-y-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
-const activeCardClass = "border-primary/40 shadow-sm";
-const inactiveCardClass = "border-border/60 opacity-60 hover:opacity-80";
+  "rounded-md border bg-card p-2.5 space-y-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1";
+const activeCardClass = "border-accent bg-accent-soft/30 shadow-xs";
+const inactiveCardClass = "border-border opacity-70 hover:opacity-100";
 
 type RuleCardProps = {
   rule: TimeRule;
@@ -64,10 +64,10 @@ type SectionProps = {
 
 function Section({ title, children }: SectionProps) {
   return (
-    <div className="space-y-3 mr-2">
-      <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-white">
+    <div className="mr-1 space-y-2.5">
+      <div className="flex items-center gap-3 text-2xs font-semibold uppercase tracking-caps text-muted-foreground">
         <span>{title}</span>
-        <span className="flex-1 h-px bg-border dark:bg-white/60" />
+        <span className="h-px flex-1 bg-border" />
       </div>
       {children}
     </div>
@@ -181,9 +181,9 @@ export function TimeRulesPanel() {
   return (
     <div className="flex-1 min-h-0 flex flex-col">
       <div className="flex-1 min-h-0 overflow-auto p-1">
-        <div className="space-y-6">
+        <div className="space-y-5">
           <Section title="Density">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2.5">
               <RuleCard rule="max-cps" active={isMaxCpsActive} onActivate={setActiveRule}>
                 <div className="space-y-2">
                   <Label htmlFor="max-cps" className="text-sm font-medium">
@@ -337,7 +337,7 @@ export function TimeRulesPanel() {
             </div>
           </Section>
           <Section title="Gaps">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2.5">
               <RuleCard rule="min-gap" active={isMinGapActive} onActivate={setActiveRule}>
                 <div className="space-y-2">
                   <Label htmlFor="min-gap" className="text-sm font-medium">
@@ -404,7 +404,7 @@ export function TimeRulesPanel() {
             </div>
           </Section>
           <Section title="Global adjustments">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2.5">
               <RuleCard rule="shift" active={isShiftActive} onActivate={setActiveRule}>
                 <div className="space-y-2">
                   <Label htmlFor="shift-ms" className="text-sm font-medium">
@@ -450,7 +450,7 @@ export function TimeRulesPanel() {
             </div>
           </Section>
           <Section title="Duration">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2.5">
               <RuleCard rule="trim-duration" active={isTrimActive} onActivate={setActiveRule}>
                 <div className="space-y-2">
                   <Label htmlFor="trim-ms" className="text-sm font-medium">
@@ -475,11 +475,11 @@ export function TimeRulesPanel() {
           </Section>
         </div>
       </div>
-      <div className="pt-4 border-t mt-auto flex items-center justify-end gap-3">
-        <Button variant="outline" className="min-w-[140px]" onClick={handleRevert}>
-          Revert Rules
+      <div className="mt-auto flex items-center justify-end gap-2 border-t pt-3">
+        <Button variant="outline" size="sm" onClick={handleRevert}>
+          Revert
         </Button>
-        <Button className="min-w-[160px]" onClick={handleApply}>
+        <Button size="sm" onClick={handleApply}>
           Apply Time Rules
         </Button>
       </div>
