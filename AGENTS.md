@@ -14,7 +14,7 @@ All product code lives under `src/` (the root is config only). The Next.js App R
 - Each feature should be cohesive internally and simple externally.
 
 ## Project Structure
-- `src/app/` route files (`layout.tsx`, `page.tsx`, `route.ts`) and minimal glue. Routing stays shallow (single main screen).
+- `src/app/` route files (`layout.tsx`, `page.tsx`) and minimal glue. Routing stays shallow (one main editor screen plus an `info` page).
 - `src/screens/` page-sized UI compositions (e.g., `EditorScreen`).
 - `src/features/` isolated feature modules (subtitle list, timeline, rules panels, export flow).
 - `src/shared/` reusable UI, hooks, utilities, constants, and styling primitives (no feature-specific logic).
@@ -48,4 +48,4 @@ Testing is not configured yet. If tests are added later:
 ## Configuration & Security
 - Use `.env.local` for local configuration and secrets.
 - Do not commit real credentials (`.env*` is ignored).
-- API routes under `src/app/api/*` are allowed but should remain minimal and tool-focused (e.g., file handling helpers).
+- The app is fully client-side today; there are no API routes. If server logic is ever needed, keep it minimal and tool-focused.

@@ -35,16 +35,16 @@ export default function InfoPage() {
           </div>
           <div className="space-y-4 text-sm leading-relaxed text-foreground">
             <p>
-              FixSRT is a small, focused tool for editing and fixing .srt subtitle files directly in the browser.
+              FixSRT is a simple, focused subtitle editor for short-form video. Drop in an .srt, fix the timing and text against your clip, and export clean — no bloat, no signup.
             </p>
             <p>
-              It was built out of a real need: making quick subtitle changes without having to install heavy desktop software or open complex video editors just to fix a few lines of text. For simple tasks, most existing tools felt slow, overpowered, or inconvenient.
+              Editing subtitles for Shorts, Reels, and TikToks usually means picking between two bad options: the heavy pro tools that are overkill for a 30-second fix, or the tiny web tools that are too limited to actually fix the thing you opened them for.
             </p>
             <p>
-              FixSRT is designed for situations where you already know what you want to change and just want to do it fast. This is especially common when working with short videos, social media clips, reels, or quick subtitle revisions where speed and simplicity matter more than advanced features.
+              FixSRT sits in the gap. It’s built for the small, repetitive fixes that short-form subtitles actually need — fast, in the browser, without the complexity you don’t want or the missing features that send you back to the heavy tools. It works fine for longer videos too, but short-form is what it was made for.
             </p>
             <p>
-              The goal is to keep the tool lightweight, straightforward, and easy to use — no accounts, no uploads, and no unnecessary steps. Just open the file, make the edit, and move on.
+              The goal is to keep it lightweight and straightforward — no accounts, no uploads, no unnecessary steps. Just open the file, make the edit, and move on.
             </p>
             <p>
               If you have feedback, ideas, or suggestions for improvements, you can reach out at:{" "}
