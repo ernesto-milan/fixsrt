@@ -12,29 +12,29 @@ export function RightPanel() {
   const setRightPanelTab = useUiStore((state) => state.setRightPanelTab);
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-card">
-      <Tabs 
-        value={rightPanelTab} 
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-background">
+      <Tabs
+        value={rightPanelTab}
         onValueChange={(value) => setRightPanelTab(value as RightPanelTab)}
         className="flex h-full min-h-0 flex-col"
       >
-        <div className="px-4 py-3 border-b">
-          <TabsList className="w-full grid grid-cols-3">
+        <div className="flex h-10 shrink-0 items-center border-b px-3">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="preview">Preview</TabsTrigger>
             <TabsTrigger value="text-rules">Text Rules</TabsTrigger>
             <TabsTrigger value="time-rules">Time Rules</TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value="preview" className="flex flex-1 min-h-0 p-4 mt-0">
+        <TabsContent value="preview" className="mt-0 flex min-h-0 flex-1 p-3">
           <VideoPreview />
         </TabsContent>
 
-        <TabsContent value="text-rules" className="flex flex-1 min-h-0 overflow-hidden p-4 mt-0">
+        <TabsContent value="text-rules" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-3">
           <TextRulesPanel />
         </TabsContent>
 
-        <TabsContent value="time-rules" className="flex flex-1 min-h-0 overflow-hidden p-4 mt-0">
+        <TabsContent value="time-rules" className="mt-0 flex min-h-0 flex-1 overflow-hidden p-3">
           <TimeRulesPanel />
         </TabsContent>
       </Tabs>

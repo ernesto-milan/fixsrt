@@ -11,9 +11,9 @@ import { useSubtitlesStore } from "@/shared/store/subtitlesStore";
 import { useToast } from "@/shared/hooks/use-toast";
 import { applyTextRule, type TextRule, type TextRuleOptions } from "@/shared/utils/textRules";
 
-const cardBaseClass = "rounded-lg border bg-card p-4 space-y-4 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
-const activeCardClass = "border-primary/40 shadow-sm";
-const inactiveCardClass = "border-border/60 opacity-60 hover:opacity-80";
+const cardBaseClass = "rounded-md border bg-card p-2.5 space-y-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-1";
+const activeCardClass = "border-accent bg-accent-soft/30 shadow-xs";
+const inactiveCardClass = "border-border opacity-70 hover:opacity-100";
 
 type RuleCardProps = {
   rule: TextRule;
@@ -64,10 +64,10 @@ type SectionProps = {
 
 function Section({ title, children }: SectionProps) {
   return (
-    <div className="space-y-3 mr-2">
-      <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-white">
+    <div className="mr-1 space-y-2.5">
+      <div className="flex items-center gap-3 text-2xs font-semibold uppercase tracking-caps text-muted-foreground">
         <span>{title}</span>
-        <span className="flex-1 h-px bg-border dark:bg-white/60" />
+        <span className="h-px flex-1 bg-border" />
       </div>
       {children}
     </div>
@@ -158,9 +158,9 @@ export function TextRulesPanel() {
   return (
     <div className="flex-1 min-h-0 flex flex-col">
       <div className="flex-1 min-h-0 overflow-auto p-1">
-        <div className="space-y-6">
+        <div className="space-y-5">
           <Section title="Structure">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2.5">
               <RuleCard rule="cpl" active={isCplActive} onActivate={activateRule}>
                 <div className="space-y-1">
                   <Label htmlFor="max-cpl" className="text-sm font-medium">
@@ -206,7 +206,7 @@ export function TextRulesPanel() {
           </Section>
 
           <Section title="Split">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2.5">
               <RuleCard rule="split-symbol" active={isSplitSymbolActive} onActivate={activateRule}>
                 <div className="space-y-1">
                   <Label htmlFor="split-symbol" className="text-sm font-medium">
@@ -253,7 +253,7 @@ export function TextRulesPanel() {
           </Section>
 
           <Section title="Cleanup">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-2.5">
               <RuleCard rule="transform-spaces" active={isTransformSpacesActive} onActivate={activateRule}>
                 <div className="space-y-1">
                   <Label className="text-sm font-medium">Transform spaces</Label>
@@ -342,11 +342,11 @@ export function TextRulesPanel() {
         </div>
       </div>
 
-      <div className="pt-4 border-t mt-auto flex items-center justify-end gap-3">
-        <Button variant="outline" className="min-w-[140px]" onClick={handleRevert}>
-          Revert Rules
+      <div className="mt-auto flex items-center justify-end gap-2 border-t pt-3">
+        <Button variant="outline" size="sm" onClick={handleRevert}>
+          Revert
         </Button>
-        <Button className="min-w-[160px]" onClick={handleApply}>
+        <Button size="sm" onClick={handleApply}>
           Apply Text Rules
         </Button>
       </div>

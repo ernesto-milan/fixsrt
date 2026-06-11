@@ -61,39 +61,43 @@ export function ExportModal() {
           <DialogTitle>Export SRT</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="filename">Filename</Label>
+        <div className="space-y-3 py-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="filename" className="text-xs text-muted-foreground">
+              Filename
+            </Label>
             <Input
               id="filename"
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               placeholder="subtitles.srt"
+              className="font-mono"
             />
           </div>
 
-          <Button 
+          <Button
             onClick={handleExport}
             disabled={isGenerating || !filename}
+            size="lg"
             className="w-full"
           >
             {isGenerating ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Generating...
+                <Loader2 className="animate-spin" />
+                Generating…
               </>
             ) : (
               <>
-                <Download className="h-4 w-4 mr-2" />
-                Generate & Download
+                <Download />
+                Generate &amp; download
               </>
             )}
           </Button>
 
           {showThankYou && (
-            <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-              <Coffee className="h-5 w-5 text-primary flex-shrink-0" />
-              <p className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-2.5 rounded-md bg-surface p-2.5">
+              <Coffee className="h-4 w-4 shrink-0 text-primary" />
+              <p className="text-xs text-muted-foreground">
                 If FixSRT saved you time, consider{" "}
                 <a
                   href="https://buymeacoffee.com/emilan"

@@ -21,6 +21,14 @@ export function VideoPreview() {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [dimensions, setDimensions] = useState<{ w: number; h: number } | null>(null);
+
+  // Dark, cool "video stage" backdrop — a subtle violet top-glow over a
+  // diagonal hatch. Used behind the preview in both themes.
+  const stageBackground = {
+    background:
+      "radial-gradient(120% 80% at 50% 0%, hsl(274 38% 16%) 0%, transparent 55%), repeating-linear-gradient(135deg, hsl(230 14% 7%) 0 26px, hsl(230 14% 9%) 26px 52px)",
+  };
 
   useEffect(() => {
     setDuration(videoFile?.duration ?? 0);
@@ -54,6 +62,10 @@ export function VideoPreview() {
     if (videoRef.current) {
       const nextDuration = videoRef.current.duration;
       setDuration(nextDuration);
+      setDimensions({
+        w: videoRef.current.videoWidth,
+        h: videoRef.current.videoHeight,
+      });
       if (videoFile) {
         setVideoFile({ ...videoFile, duration: nextDuration });
       }
@@ -93,19 +105,33 @@ export function VideoPreview() {
 
   if (!videoFile) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-muted/30 rounded-lg">
-        <div className="text-center text-muted-foreground">
-          <p className="text-sm">No video loaded</p>
-          <p className="text-xs mt-1">Upload a video file to preview subtitles</p>
-        </div>
+      <div
+        className="relative flex flex-1 flex-col items-center justify-end overflow-hidden rounded-lg pb-8"
+        style={stageBackground}
+      >
+        <span className="absolute left-3 top-3 rounded-sm bg-black/40 px-2 py-1 font-mono text-2xs text-white/70">
+          no video
+        </span>
+        <p className="rounded-sm bg-black/80 px-4 py-1.5 text-md font-medium text-white">
+          Drop in your .srt —
+        </p>
+        <p className="mt-3 text-xs text-white/50">Upload a video file to preview subtitles</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       {/* Video container */}
-      <div className="relative flex-1 min-h-0 bg-black rounded-lg overflow-hidden flex items-center justify-center">
+      <div
+        className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-lg"
+        style={stageBackground}
+      >
+        {dimensions && (
+          <span className="absolute left-3 top-3 z-10 rounded-sm bg-black/40 px-2 py-1 font-mono text-2xs text-white/70">
+            {dimensions.w} × {dimensions.h}
+          </span>
+        )}
         <video
           ref={videoRef}
           src={videoFile.url}
@@ -114,11 +140,11 @@ export function VideoPreview() {
           onLoadedMetadata={handleLoadedMetadata}
           onEnded={() => setIsPlaying(false)}
         />
-        
+
         {/* Subtitle overlay */}
         {currentSubtitle && (
-          <div className="absolute bottom-12 left-0 right-0 text-center px-4">
-            <p className="inline-block bg-black/80 text-white px-4 py-2 rounded text-lg">
+          <div className="absolute bottom-8 left-0 right-0 px-4 text-center">
+            <p className="inline-block max-w-[80%] rounded-sm bg-black/80 px-4 py-1.5 text-md font-medium leading-snug text-white">
               {currentSubtitle.text}
             </p>
           </div>
@@ -126,7 +152,7 @@ export function VideoPreview() {
       </div>
 
       {/* Controls */}
-      <div className="mt-3 space-y-2 shrink-0">
+      <div className="mt-3 shrink-0 space-y-2">
         {/* Timeline slider */}
         <Slider
           value={[currentTime]}
@@ -135,39 +161,21 @@ export function VideoPreview() {
           onValueChange={handleSeek}
           className="cursor-pointer"
         />
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8"
-              onClick={togglePlay}
-            >
-              {isPlaying ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
+            <Button variant="ghost" size="icon" onClick={togglePlay}>
+              {isPlaying ? <Pause /> : <Play />}
             </Button>
-            
-            <span className="text-xs text-muted-foreground font-mono">
+
+            <span className="font-mono text-2xs text-muted-foreground">
               {formatTimeDisplay(currentTime)} / {formatTimeDisplay(duration)}
             </span>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8"
-              onClick={toggleMute}
-            >
-              {isMuted ? (
-                <VolumeX className="h-4 w-4" />
-              ) : (
-                <Volume2 className="h-4 w-4" />
-              )}
+            <Button variant="ghost" size="icon" onClick={toggleMute}>
+              {isMuted ? <VolumeX /> : <Volume2 />}
             </Button>
             <Slider
               value={[isMuted ? 0 : volume]}
