@@ -7,31 +7,22 @@ import { Button } from "@/shared/ui/button";
 export default function InfoPage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card px-4 py-2 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <img src="/logo_full.png" alt="FixSRT" className="h-10 w-auto block" />
-            <span className="sr-only">FixSRT</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              className="text-muted-foreground hover:text-foreground !h-8 !w-8 p-0 [&_svg]:h-6 [&_svg]:w-6"
-            >
-              <Link href="/" className="flex h-full w-full items-center justify-center">
-                <ArrowLeft />
-              </Link>
-            </Button>
-          </div>
+      <header className="flex h-12 items-center justify-between border-b bg-panel px-3">
+        <div className="flex items-center">
+          <img src="/logo_full.png" alt="FixSRT" className="h-7 w-auto block" />
+          <span className="sr-only">FixSRT</span>
         </div>
+        <Button asChild variant="ghost" size="icon" aria-label="Back to editor">
+          <Link href="/">
+            <ArrowLeft />
+          </Link>
+        </Button>
       </header>
 
       <main className="px-4 py-10">
-        <div className="mx-auto max-w-3xl space-y-6 rounded-2xl border border-border bg-card p-8 shadow-lg">
+        <div className="mx-auto max-w-3xl space-y-6 rounded-lg border border-border bg-card p-8 shadow-sm">
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-semibold text-foreground">Why FixSRT exists</h1>
+            <h1 className="text-xl font-semibold text-foreground">Why FixSRT exists</h1>
           </div>
           <div className="space-y-4 text-sm leading-relaxed text-foreground">
             <p>
