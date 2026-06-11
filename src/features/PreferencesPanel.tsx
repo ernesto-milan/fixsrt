@@ -38,11 +38,11 @@ export function PreferencesPanel() {
       {/* Panel */}
       <div
         className={cn(
-          "fixed top-0 right-0 z-50 h-full w-80 border-l bg-panel shadow-lg transition-transform duration-300 ease-out",
+          "fixed top-0 right-0 z-50 flex h-full w-full max-w-sm flex-col border-l bg-panel shadow-lg transition-transform duration-300 ease-out sm:w-80",
           isPreferencesOpen ? "translate-x-0" : "translate-x-full"
         )}
       >
-        <div className="flex h-12 items-center justify-between border-b px-3">
+        <div className="flex h-12 shrink-0 items-center justify-between border-b px-3">
           <h2 className="text-md font-semibold">Preferences</h2>
           <Button
             variant="ghost"
@@ -54,7 +54,7 @@ export function PreferencesPanel() {
           </Button>
         </div>
 
-        <div className="space-y-5 overflow-y-auto p-3">
+        <div className="flex-1 space-y-5 overflow-y-auto p-3">
           <Label className="text-2xs font-semibold uppercase tracking-caps text-faint">
             Appearance
           </Label>
